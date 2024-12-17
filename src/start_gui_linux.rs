@@ -1,9 +1,7 @@
+#[cfg(target_os = "linux")]
 pub mod start_gui_linux {
     use fltk::{
         prelude::*,
-        table,
-        enums,
-        draw,
     };
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
@@ -140,7 +138,7 @@ pub mod start_gui_linux {
                         Some(dev) => dev, 
                         None => panic!("Failed to connect to device"),
                     };
-                    port_read::read_stream(device);
+                    port_read::read_stream_linux(device);
                 }
 
                 data = read_write_utils::read_temp(temp_path);

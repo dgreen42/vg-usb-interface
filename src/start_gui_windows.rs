@@ -1,3 +1,4 @@
+#[cfg(target_os = "windows")]
 pub mod start_gui_windows {
     use fltk::{
         prelude::*,
@@ -136,11 +137,11 @@ pub mod start_gui_windows {
                 }
 
                 if active_read == 1 {
-                    let device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                    let device = match port_connection::connect_port_win(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
                         Some(dev) => dev, 
                         None => panic!("Failed to connect to device"),
                     };
-                    port_read::read_stream(device);
+                    port_read::read_stream_win(device);
                 }
 
                 data = read_write_utils::read_temp(temp_path);

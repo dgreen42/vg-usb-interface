@@ -14,15 +14,18 @@ mod start_gui_windows;
 /// EOL = \r
 /// data comes as a csv line
 
+#[cfg(target_os = "linux")]
 pub fn linux() {
     start_gui_linux::start_gui_linux::start_gui();
 }
 
+#[cfg(target_os = "windows")]
 pub fn windows() {
     start_gui_windows::start_gui_windows::start_gui();
 }
 
-pub fn mac() {
+#[cfg(target_os = "macos")]
+pub fn macos() {
 
 }
 

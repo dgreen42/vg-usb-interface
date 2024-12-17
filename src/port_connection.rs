@@ -1,3 +1,10 @@
+#[cfg(target_os = "linux")]
+use serialport::{
+    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, TTYPort
+};
+
+
+#[cfg(target_os = "windows")]
 use serialport::{
     DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, TTYPort
 };
@@ -6,6 +13,7 @@ use std::{
     time::Duration,
 };
 
+#[cfg(target_os = "windows")]
 pub fn connect_port_win(
     path: &str,
     baud_rate: u32,
@@ -32,41 +40,16 @@ pub fn connect_port_win(
     return Some(device)
 }
 
-pub fn connect_port_tty(
-    path: &str,
-    baud_rate: u32,
+#[cfg(target_os = "windows")]
+fn port_settings_win(
+    mut device: Box<dyn SerialPort>,
     parity: &str,
     time_out: u64,
-    exclusivity: bool,
+    //exclusivity: bool,
     data_bits: &str,
     flow_control: &str,
     stop_bits: &str,
-) -> Option<serialport::TTYPort>
-{
-    let device = match TTYPort::open(&serialport::new(path, baud_rate)) {
-        Ok(port) => Some(port),
-        Err(_e) => None,
-    };
-
-    if !device.is_some() {
-        println!("Could not open device");
-        return None
-    }
-
-    let device = port_settings_tty(device.unwrap(), parity, time_out, exclusivity, data_bits, flow_control, stop_bits);
-
-    return Some(device);
-}
-
-fn port_settings_tty(
-    mut device: TTYPort,
-    parity: &str,
-    time_out: u64,
-    exclusivity: bool,
-    data_bits: &str,
-    flow_control: &str,
-    stop_bits: &str,
-    ) -> TTYPort {
+    ) -> Box<dyn SerialPort> {
 
     let par = match parity {
         "None" => Parity::None,
@@ -88,11 +71,13 @@ fn port_settings_tty(
         Err(e) => eprintln!("Failed to set timeout {}", e),
     };
 
+    /*
     let dse = device.set_exclusive(exclusivity);
     match dse {
         Ok(_s) => println!("Exculsivity set to: {:?}", dur),
         Err(e) => eprintln!("Failed to set exclusivity {}", e),
     };
+    */
 
     let d_bits = match data_bits {
         "Five" => DataBits::Five,
@@ -133,15 +118,44 @@ fn port_settings_tty(
     return device 
 }
 
-fn port_settings_win(
-    mut device: Box<dyn SerialPort>,
+#[cfg(target_os = "linux")]
+pub fn connect_port_tty(
+    path: &str,
+    baud_rate: u32,
     parity: &str,
     time_out: u64,
-    //exclusivity: bool,
+    exclusivity: bool,
     data_bits: &str,
     flow_control: &str,
     stop_bits: &str,
-    ) -> Box<dyn SerialPort> {
+) -> Option<serialport::TTYPort>
+{
+    let device = match TTYPort::open(&serialport::new(path, baud_rate)) {
+        Ok(port) => Some(port),
+        Err(_e) => None,
+    };
+
+    if !device.is_some() {
+        println!("Could not open device");
+        return None
+    }
+
+    let device = port_settings_tty(device.unwrap(), parity, time_out, exclusivity, data_bits, flow_control, stop_bits);
+
+    return Some(device);
+}
+
+#[cfg(target_os = "linux")]
+fn port_settings_tty(
+    mut device: TTYPort,
+    parity: &str,
+    time_out: u64,
+    exclusivity: bool,
+    data_bits: &str,
+    flow_control: &str,
+    stop_bits: &str,
+    ) -> TTYPort 
+{
 
     let par = match parity {
         "None" => Parity::None,
@@ -163,13 +177,11 @@ fn port_settings_win(
         Err(e) => eprintln!("Failed to set timeout {}", e),
     };
 
-    /*
     let dse = device.set_exclusive(exclusivity);
     match dse {
         Ok(_s) => println!("Exculsivity set to: {:?}", dur),
         Err(e) => eprintln!("Failed to set exclusivity {}", e),
     };
-    */
 
     let d_bits = match data_bits {
         "Five" => DataBits::Five,
