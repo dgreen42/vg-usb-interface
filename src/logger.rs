@@ -3,8 +3,6 @@ use std::{
     io::Write,
     path::Path,
 };
-
-use colored::Colorize;
 use fltk::prelude::FltkError;
 
 pub fn create_log() -> Option<()> {
@@ -32,7 +30,7 @@ pub fn create_log() -> Option<()> {
     return Some(())
 }
 
-pub fn log<T: std::fmt::Debug>(info: &T) {
+pub fn log<T: std::fmt::Display>(info: &T) {
 
     let log_path = Path::new("./log/log.log");
     let mut log_file = match File::options().append(true).open(log_path) {
@@ -40,9 +38,9 @@ pub fn log<T: std::fmt::Debug>(info: &T) {
         Err(e) => panic!("Failed to open log file {}", e),
     };
 
-    let result = log_file.write_fmt(format_args!("{:?}\n", info));
+    let result = log_file.write_fmt(format_args!("{}\n", info));
     match result {
-        Ok(s) => println!("Wrote log line: {:?}", s),
+        Ok(_s) => println!("Wrote log line: {}", info),
         Err(e) => eprintln!("Failed to write log line {}", e),
     }
 
@@ -57,13 +55,13 @@ pub fn log_error(gui_component: Result<(), FltkError>, component: &str) {
     };
 
     let info = match gui_component {
-        Ok(s) => format!("Component: {} {:?}", component, s),
-        Err(e) => format!("Component: {} {} {:?}", "Error".red(), component, e),
+        Ok(_s) => format!("Component: {} {:?}", "Ok", component),
+        Err(e) => format!("Component: {} {} {:?}", "Error", component, e),
     };
 
     let result = log_file.write_fmt(format_args!("{:?}\n", info));
     match result {
-        Ok(s) => println!("Wrote log line: {:?}", s),
+        Ok(_s) => println!("Wrote log line: {}", info),
         Err(e) => eprintln!("Failed to write log line {}", e),
     }
 }

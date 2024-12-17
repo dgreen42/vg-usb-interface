@@ -1,4 +1,4 @@
-pub mod start_gui_linux {
+pub mod start_gui_windows {
     use fltk::{
         prelude::*,
         table,

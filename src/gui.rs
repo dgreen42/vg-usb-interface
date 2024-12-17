@@ -93,8 +93,6 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     base_grid.end();
 
-    Grid::debug(&mut base_grid, 1);
-
     flex_base.end();
 
     window.end();

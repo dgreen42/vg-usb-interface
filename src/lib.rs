@@ -5,6 +5,7 @@ mod port_connection;
 mod table_functions;
 mod logger;
 mod start_gui_linux;
+mod start_gui_windows;
 //    for vg-usb-meter //
 /// baudrate = 9600
 /// 8bits
@@ -18,7 +19,7 @@ pub fn linux() {
 }
 
 pub fn windows() {
-
+    start_gui_windows::start_gui_windows::start_gui();
 }
 
 pub fn mac() {
