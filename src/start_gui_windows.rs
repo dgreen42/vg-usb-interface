@@ -1,11 +1,6 @@
 #[cfg(target_os = "windows")]
 pub mod start_gui_windows {
-    use fltk::{
-        prelude::*,
-        table,
-        enums,
-        draw,
-    };
+    use fltk:: prelude::* ;
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
     };
@@ -31,7 +26,7 @@ pub mod start_gui_windows {
         let device_settings_input = gui_comp.2.1;
         let _read_write_buttons = gui_comp.3.0;
         let read_write_input = gui_comp.3.1;
-        let mut table = gui_comp.4;
+        let table = gui_comp.4;
 
         let mut device = String::new();
         let mut baud_rate: u32 = 0;

@@ -1,6 +1,6 @@
-#[cfg(target_os = "linux")]
-pub mod start_gui_linux {
-    use fltk:: prelude::*;
+#[cfg(target_os = "macos")]
+pub mod start_gui_macos {
+    use fltk:: prelude::* ;
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
     };
@@ -14,7 +14,7 @@ pub mod start_gui_linux {
 
     pub fn start_gui() {
 
-        let _log_file_result = match logger::create_log() {
+        let log_file_result = match logger::create_log() {
             Some(file) => file,
             None => panic!("Failed to create temp file"),
         };
