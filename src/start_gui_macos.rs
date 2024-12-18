@@ -74,6 +74,7 @@ pub mod start_gui_macos {
             };
 
             if let Some(message) = reciever.recv() {
+                logger::log(&format!("Message passed {:?}", message));
                 match message {
                     gui::Message::Parity => {
                         parity = device_settings_choices[1].choice().unwrap();

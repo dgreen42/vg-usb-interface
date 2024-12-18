@@ -1,6 +1,6 @@
 #[cfg(target_os = "linux")]
 use serialport::{
-    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, TTYPort
+    DataBits, FlowControl, Parity, SerialPort, StopBits, TTYPort, Error, ErrorKind, Result
 };
 
 
@@ -127,7 +127,7 @@ pub fn connect_port_tty(
     data_bits: &str,
     flow_control: &str,
     stop_bits: &str,
-) -> Option<serialport::TTYPort>
+) -> Result<TTYPort>
 {
     let device = match TTYPort::open(&serialport::new(path, baud_rate)) {
         Ok(port) => Some(port),
@@ -135,13 +135,12 @@ pub fn connect_port_tty(
     };
 
     if !device.is_some() {
-        println!("Could not open device");
-        return None
+        return Err(Error {kind: ErrorKind::InvalidInput, description: String::from("Could not open device")})
     }
 
     let device = port_settings_tty(device.unwrap(), parity, time_out, exclusivity, data_bits, flow_control, stop_bits);
 
-    return Some(device);
+    return Ok(device);
 }
 
 #[cfg(target_os = "linux")]

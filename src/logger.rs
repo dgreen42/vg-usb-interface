@@ -4,6 +4,10 @@ use std::{
     path::Path,
 };
 use fltk::prelude::FltkError;
+use serialport::{
+    SerialPort,
+    TTYPort,
+};
 
 pub fn create_log() -> Option<()> {
     if !Path::new("./log").is_dir() {
@@ -64,5 +68,15 @@ pub fn log_error(gui_component: Result<(), FltkError>, component: &str) {
         Ok(_s) => log(&format!("Wrote log line: {}", info)),
         Err(e) => log(&format!("Failed to write log line {}", e)),
     }
+}
+
+pub fn log_connection_error_tty(error: serialport::Error, name: &str) -> serialport::Error {
+    log(&format!("Failed to connect to device: {} :: {:?}", name, error));
+    error
+}
+
+pub fn log_connection_error_win(error: serialport::Error, name: &str) -> serialport::Error {
+    log(&format!("Failed to connect to device: {} :: {:?}", name, error));
+    error
 }
 

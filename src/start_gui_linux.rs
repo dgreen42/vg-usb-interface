@@ -1,6 +1,7 @@
 #[cfg(target_os = "linux")]
 pub mod start_gui_linux {
     use fltk:: prelude::*;
+    use serialport::TTYPort;
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
     };
@@ -74,6 +75,7 @@ pub mod start_gui_linux {
             };
 
             if let Some(message) = reciever.recv() {
+                logger::log(&format!("Message passed {:?}", message));
                 match message {
                     gui::Message::Parity => {
                         parity = device_settings_choices[1].choice().unwrap();
@@ -131,11 +133,15 @@ pub mod start_gui_linux {
                 }
 
                 if active_read == 1 {
-                    let device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
-                        Some(dev) => dev, 
-                        None => panic!("Failed to connect to device"),
+                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_linux(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_tty(e, &device);
+                            continue;
+                        }
                     };
-                    port_read::read_stream_linux(device);
                 }
 
                 data = read_write_utils::read_temp(temp_path);
