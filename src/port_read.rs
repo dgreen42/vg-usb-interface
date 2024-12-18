@@ -1,7 +1,7 @@
 #[cfg(target_os = "linux")]
 use serialport::TTYPort;
 
-#[cfg(target_os = "linux")]
+#[cfg(target_os = "windows")]
 use serialport::SerialPort;
 
 use std::{
@@ -61,7 +61,7 @@ pub fn read_stream_linux(mut device: TTYPort) {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(target_os = "windows")]
 pub fn read_stream_win(mut device: Box<dyn SerialPort>) {
 
     let temp_path = Path::new("./temp/temp_data.csv");

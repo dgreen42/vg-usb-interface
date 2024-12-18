@@ -12,3 +12,6 @@ serialport = "4.6.1"
 
 [[bin1]]
 name = "vg-usb-interface_linux"
+
+[[bin2]]
+name = "vg-usb-interface_windows"

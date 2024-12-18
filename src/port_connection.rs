@@ -6,7 +6,7 @@ use serialport::{
 
 #[cfg(target_os = "windows")]
 use serialport::{
-    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, TTYPort
+    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits 
 };
 
 use std::{
