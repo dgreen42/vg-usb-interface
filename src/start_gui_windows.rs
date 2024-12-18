@@ -74,7 +74,6 @@ pub mod start_gui_windows {
             };
 
             if let Some(message) = reciever.recv() {
-                println!("{:?}", message);
                 match message {
                     gui::Message::Parity => {
                         parity = device_settings_choices[1].choice().unwrap();
