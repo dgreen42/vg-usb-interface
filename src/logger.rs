@@ -9,8 +9,8 @@ pub fn create_log() -> Option<()> {
     if !Path::new("./log").is_dir() {
         let new_dir = create_dir(Path::new("./log"));
         match new_dir {
-            Ok(s) => println!("Created log directory: {:?}", s),
-            Err(e) => eprintln!("Failed to create log directory: {}", e),
+            Ok(_s) => (),
+            Err(e) => panic!("Failed to create log directory: {}", e),
         }
     }
 
@@ -18,8 +18,8 @@ pub fn create_log() -> Option<()> {
     if log_path.is_file() {
         let remove = remove_file(log_path);
         match remove {
-            Ok(s) => println!("Log file removed: {:?}", s),
-            Err(e) => eprintln!("Failed to remove log file: {}", e),
+            Ok(_s) => (),
+            Err(e) => panic!("Failed to remove log file: {}", e),
         }
     }
     match File::create(log_path) {
@@ -40,8 +40,8 @@ pub fn log<T: std::fmt::Display>(info: &T) {
 
     let result = log_file.write_fmt(format_args!("{}\n", info));
     match result {
-        Ok(_s) => println!("Wrote log line: {}", info),
-        Err(e) => eprintln!("Failed to write log line {}", e),
+        Ok(_s) => (),
+        Err(e) => panic!("Failed to write log line {}", e),
     }
 
 }
@@ -59,10 +59,10 @@ pub fn log_error(gui_component: Result<(), FltkError>, component: &str) {
         Err(e) => format!("Component: {} {} {:?}", "Error", component, e),
     };
 
-    let result = log_file.write_fmt(format_args!("{:?}\n", info));
+    let result = log_file.write_fmt(format_args!("{:?} :: ", info));
     match result {
-        Ok(_s) => println!("Wrote log line: {}", info),
-        Err(e) => eprintln!("Failed to write log line {}", e),
+        Ok(_s) => log(&format!("Wrote log line: {}", info)),
+        Err(e) => log(&format!("Failed to write log line {}", e)),
     }
 }
 

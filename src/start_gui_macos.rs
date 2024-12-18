@@ -2,7 +2,7 @@
 pub mod start_gui_macos {
     use fltk:: prelude::* ;
     use std::{
-        fs::{create_dir, remove_file, File}, path::Path,
+        env::temp_dir, fs::{create_dir, remove_file, File}, path::Path
     };
 
     use crate::gui;
@@ -46,15 +46,15 @@ pub mod start_gui_macos {
         if temp_path.is_file() {
             let remove = remove_file(temp_path);
             match remove {
-                Ok(s) => println!("Temp file removed: {:?}", s),
-                Err(e) => eprintln!("Failed to remove temp file: {}", e),
+                Ok(s) => logger::log(&format!("Temp file removed: {:?}", s)),
+                Err(e) => logger::log(&format!("Failed to remove temp file: {}", e)),
             }
         }
         if !temp_dir.is_dir() {
             let dir = create_dir(temp_dir);
             match dir {
-                Ok(s) => logger::log(&format!("Created temp dir {:?}", s)),
-                Err(e) => logger::log(&format!("Failed to create temp dir {:?}", e)),
+                Ok(_s) => logger::log(&format!("Created temp directory {:?}", temp_dir)),
+                Err(e) => logger::log(&format!("Failed to create temp directory {:?}", e)),
             }
         }
         if !temp_path.is_file() {
@@ -136,7 +136,7 @@ pub mod start_gui_macos {
                         Some(dev) => dev, 
                         None => panic!("Failed to connect to device"),
                     };
-                    port_read::read_stream_linux(device);
+                    port_read::read_stream_macos(device);
                 }
 
                 data = read_write_utils::read_temp(temp_path);

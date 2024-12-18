@@ -46,15 +46,15 @@ pub mod start_gui_linux {
         if temp_path.is_file() {
             let remove = remove_file(temp_path);
             match remove {
-                Ok(s) => println!("Temp file removed: {:?}", s),
-                Err(e) => eprintln!("Failed to remove temp file: {}", e),
+                Ok(s) => logger::log(&format!("Temp file removed: {:?}", s)),
+                Err(e) => logger::log(&format!("Failed to remove temp file: {}", e)),
             }
         }
         if !temp_dir.is_dir() {
             let dir = create_dir(temp_dir);
             match dir {
-                Ok(s) => logger::log(&format!("Created temp dir {:?}", s)),
-                Err(e) => logger::log(&format!("Failed to create temp dir {:?}", e)),
+                Ok(_s) => logger::log(&format!("Created temp directory {:?}", temp_dir)),
+                Err(e) => logger::log(&format!("Failed to create temp directory {:?}", e)),
             }
         }
         if !temp_path.is_file() {
