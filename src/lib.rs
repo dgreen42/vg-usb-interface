@@ -6,6 +6,7 @@ mod table_functions;
 mod logger;
 mod start_gui_linux;
 mod start_gui_windows;
+mod start_gui_macos;
 //    for vg-usb-meter //
 /// baudrate = 9600
 /// 8bits
@@ -26,6 +27,7 @@ pub fn windows() {
 
 #[cfg(target_os = "macos")]
 pub fn macos() {
+    start_gui_macos::start_gui_macos_start_gui();
 
 }
 
