@@ -5,7 +5,7 @@ use serialport::{
 
 #[cfg(target_os = "windows")]
 use serialport::{
-    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits 
+    DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, Error, ErrorKind, Result 
 };
 
 use std:: time::Duration;
@@ -22,7 +22,7 @@ pub fn connect_port_win(
     data_bits: &str,
     flow_control: &str,
     stop_bits: &str,
-) -> Option<Box<dyn SerialPort>>
+) -> Result<Box<dyn SerialPort>>
 {
     let device = match serialport::new(path, baud_rate).open() {
         Ok(port) => Some(port),
@@ -30,8 +30,7 @@ pub fn connect_port_win(
     };
 
     if !device.is_some() {
-        println!("Could not open device");
-        return None
+        return Err(Error {kind: ErrorKind::InvalidInput, description: String::from("Could not open device")})
     }
 
     logger::log(&format!("Device open success: {:?}", device));
@@ -40,7 +39,7 @@ pub fn connect_port_win(
 
     logger::log(&format!("Device options set: {:?}", device));
     
-    return Some(device)
+    return Ok(device)
 }
 
 #[cfg(target_os = "windows")]

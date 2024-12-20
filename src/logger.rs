@@ -4,10 +4,17 @@ use std::{
     path::Path,
 };
 use fltk::prelude::FltkError;
+
+#[cfg(target_os = "linux")]
 use serialport::{
-    SerialPort,
     TTYPort,
 };
+
+#[cfg(target_os = "windows")]
+use serialport::{
+    SerialPort,
+};
+
 
 pub fn create_log() -> Option<()> {
     if !Path::new("./log").is_dir() {
