@@ -19,22 +19,27 @@ use crate::logger;
 #[cfg(target_os = "linux")]
 pub fn read_stream_linux(mut device: TTYPort) {
 
+    logger::log(&format!("Device read entry: {:?}", device));
+
     let temp_path = Path::new("./temp/temp_data.csv");
     let mut temp_file = match File::options().append(true).open(temp_path) {
         Ok(file) => file,
-        Err(_e) => panic!("Failed to create temp file"),
+        Err(e) => panic!("Failed to create temp file: {}", e),
     };
 
     let mut bit_buf: [u8; 1] = [0; 1];
     let mut line_buf: [u8; 32] = [0; 32];
     let mut line_count = 0;
     let mut reader = device.read(&mut bit_buf);
+    match &reader {
+        Ok(s) => logger::log(&format!("Device initial read success: {:?}", s)),
+        Err(e) => logger::log(&format!("Device initial read failed: {:?}", e)),
+    }
     let mut result: Vec<String> = Vec::new();
-    logger::log(&format!("{:?}", result));
 
     while !reader.is_err() {
         reader = device.read(&mut bit_buf);
-        logger::log(&format!("{:?}", reader));
+        logger::log(&format!("Read: {:?}", reader));
         let current_char = from_utf8(&bit_buf).unwrap();
         if current_char != "\n" {
             if current_char == " " {
@@ -70,6 +75,7 @@ pub fn read_stream_linux(mut device: TTYPort) {
 
 #[cfg(target_os = "windows")]
 pub fn read_stream_win(mut device: Box<dyn SerialPort>) {
+    logger::log(&format!("Device read entry: {:?}", device));
 
     let temp_path = Path::new("./temp/temp_data.csv");
     let mut temp_file = match File::options().append(true).open(temp_path) {
@@ -120,7 +126,8 @@ pub fn read_stream_win(mut device: Box<dyn SerialPort>) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn read_stream_macos(mut device: TTYPort) {
+pub fn read_stream_linux(mut device: TTYPort) {
+    logger::log(&format!("Device read entry: {:?}", device));
 
     let temp_path = Path::new("./temp/temp_data.csv");
     let mut temp_file = match File::options().append(true).open(temp_path) {

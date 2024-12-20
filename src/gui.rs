@@ -17,6 +17,7 @@ use fltk::{
     frame::Frame,
     table::Table,
     button::Button,
+    output::Output,
 };
 
 use fltk_theme::{
@@ -29,6 +30,7 @@ use crate::logger::log_error;
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
     Device,
+    DeviceStatus,
     Parity,
     Exclusivity,
     BaudRate,
@@ -45,7 +47,7 @@ pub enum Message {
 }
 
 
-pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Vec<Button>, Input), Table) {
+pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Vec<Button>, Input, Output), Table) {
 
     let app = App::default();
     let mut window = Window::new(500, 700, 1100, 600, "VG Meter 200 USB Interface");
@@ -118,6 +120,7 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     read_write_buttons.0[2].emit(send, Message::Stop);
     read_write_buttons.0[3].emit(send, Message::Close);
     read_write_buttons.1.emit(send, Message::FileName);
+    read_write_buttons.2.emit(send, Message::DeviceStatus);
 
     let mut data_table_table = data_table.1;
 
@@ -127,7 +130,7 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     return (app, recieve, device_setting_choices, read_write_buttons, data_table_table)
 }
 
-fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
+fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
 
     let mut read_write_grid = Grid::default().with_size(350, 300);
     read_write_grid.set_layout_ext(6, 2, 5, 5);
@@ -137,12 +140,18 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
     let mut b_close = Button::default().with_label("Close Connection").with_size(80, 10);
     let mut l_file_name = Frame::default().with_label("File Name");
     let mut i_file_name = Input::default().with_size(80, 5);
+    let mut l_device_status = Frame::default().with_label("Device Status");
+    let mut o_device_status = Output::default().with_size(80, 10);
     let b_read_grid_result = read_write_grid.set_widget(&mut b_read, 1, 0);
     log_error(b_read_grid_result, "b_read_grid_result");
     let b_stop_grid_result = read_write_grid.set_widget(&mut b_stop, 2, 0);
     log_error(b_stop_grid_result, "b_stop_grid_result");
     let b_close_grid_result = read_write_grid.set_widget(&mut b_close, 3, 0);
     log_error(b_close_grid_result, "b_close_grid_result");
+    let l_device_status_result = read_write_grid.set_widget(&mut l_device_status, 1, 1);
+    log_error(l_device_status_result, "l_device_status_result ");
+    let o_device_status_result = read_write_grid.set_widget(&mut o_device_status, 2, 1);
+    log_error(o_device_status_result , "o_device_status_result");
     let l_file_name_grid_result = read_write_grid.set_widget(&mut l_file_name, 3, 1);
     log_error(l_file_name_grid_result, "l_file_name_grid_result");
     let i_file_name_grid_result = read_write_grid.set_widget(&mut i_file_name, 4, 1);
@@ -155,7 +164,7 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
     let b_vec = vec![b_read, b_write, b_stop, b_close];
 
 
-    return (read_write_grid, (b_vec, i_file_name))
+    return (read_write_grid, (b_vec, i_file_name, o_device_status))
 }
 
 fn create_data_table() -> (Grid, Table) {
@@ -192,6 +201,7 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
 
     let mut l_device = Frame::default().with_label("Device");
     let mut c_device = Choice::default().with_size(20, 10);
+    c_device.add_choice("None");
     for port in ports {
         c_device.add_choice(&port.port_name);
     }

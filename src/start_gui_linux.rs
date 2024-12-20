@@ -23,10 +23,11 @@ pub mod start_gui_linux {
         let gui_comp = gui::create_window();
         let app = gui_comp.0;
         let reciever = gui_comp.1;
-        let device_settings_choices = gui_comp.2.0;
+        let mut device_settings_choices = gui_comp.2.0;
         let device_settings_input = gui_comp.2.1;
         let _read_write_buttons = gui_comp.3.0;
         let read_write_input = gui_comp.3.1;
+        let mut read_write_output = gui_comp.3.2;
         let table = gui_comp.4;
 
         let mut device = String::new();
@@ -39,6 +40,7 @@ pub mod start_gui_linux {
         let mut flow_control = String::new();
         let mut data: Vec<String> = Vec::new();
         let mut active_read = 0;
+        let mut device_status = String::new();
 
         let mut file_name = String::new();
 
@@ -120,37 +122,59 @@ pub mod start_gui_linux {
                     gui::Message::Stop => {
                         active_read = 0;
                     },
-                    gui::Message::Close => {},
-                    gui::Message::FileName => {
-                        file_name = read_write_input.value();
-                        println!("{}", file_name);
+                    gui::Message::Close => {
+                        device = String::new();
                     },
+                    gui::Message::FileName => {},
                     gui::Message::Write => {
+                        file_name = read_write_input.value();
+                        logger::log(&format!("file name set: {}", file_name));
                         let file_path = Path::new(&file_name);
                         read_write_utils::write_file(file_path, temp_path);
                     },
                     _ => {}
                 }
 
-                if active_read == 1 {
-                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
-                        Ok(dev) => {
-                            port_read::read_stream_linux(dev);
-                        },
-                        Err(e) => {
-                            logger::log_connection_error_tty(e, &device);
-                            continue;
-                        }
-                    };
-                }
-
-                data = read_write_utils::read_temp(temp_path);
-                // change unit to the units that are selected from the device
-                let headers = vec!["Moisture".to_string(), "unit".to_string(), "Light".to_string(), "unit".to_string(), "Temp".to_string(), "unit".to_string(), "Time".to_string()];
-                table_functions::draw_table(data, table.clone(), headers);
             }
 
-        }
+
+            if active_read == 1 {
+                let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+
+                    Ok(dev) => {
+                        port_read::read_stream_linux(dev);
+                    },
+                    Err(e) => {
+                        logger::log_connection_error_tty(e, &device);
+                    }
+                };
+            }
+
+            if device.is_empty() {
+                read_write_output.set_value(&"No device connected");
+                device_settings_choices[0].set_value(0);
+            } else {
+                match active_read {
+                    0 => {
+                        device_status = "Inactive".to_string();
+                        read_write_output.set_value(&format!("{}: {}", device, device_status));
+                    },
+                    1 => {
+                        device_status = "Reading".to_string();
+                        read_write_output.set_value(&format!("{}: {}", device, device_status));
+                    },
+                    _ => {},
+                }
+            }
+
+            data = read_write_utils::read_temp(temp_path);
+            // change unit to the units that are selected from the device
+            let headers = vec!["Moisture".to_string(), "unit".to_string(), "Light".to_string(), "unit".to_string(), "Temp".to_string(), "unit".to_string(), "Time".to_string()];
+            table_functions::draw_table(data, table.clone(), headers);
+
+            app.redraw();
+
+        } 
 
         app.run().unwrap();
     }

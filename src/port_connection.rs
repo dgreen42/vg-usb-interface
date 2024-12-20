@@ -3,13 +3,13 @@ use serialport::{
     DataBits, FlowControl, Parity, SerialPort, StopBits, TTYPort, Error, ErrorKind, Result
 };
 
-
 #[cfg(target_os = "windows")]
 use serialport::{
     DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits 
 };
 
 use std:: time::Duration;
+use crate::logger;
 
 
 #[cfg(target_os = "windows")]
@@ -34,7 +34,11 @@ pub fn connect_port_win(
         return None
     }
 
+    logger::log(&format!("Device open success: {:?}", device));
+
     let device = port_settings_win(device.unwrap(), parity, time_out, data_bits, flow_control, stop_bits);
+
+    logger::log(&format!("Device options set: {:?}", device));
     
     return Some(device)
 }
@@ -138,7 +142,11 @@ pub fn connect_port_tty(
         return Err(Error {kind: ErrorKind::InvalidInput, description: String::from("Could not open device")})
     }
 
+    logger::log(&format!("Device open success: {:?}", device));
+
     let device = port_settings_tty(device.unwrap(), parity, time_out, exclusivity, data_bits, flow_control, stop_bits);
+
+    logger::log(&format!("Device options set: {:?}", device));
 
     return Ok(device);
 }
@@ -242,7 +250,11 @@ pub fn connect_port_tty(
         return None
     }
 
+    logger::log(&format!("Device open success: {:?}", device));
+
     let device = port_settings_tty(device.unwrap(), parity, time_out, exclusivity, data_bits, flow_control, stop_bits);
+    
+    logger::log(&format!("Device options set: {:?}", device));
 
     return Some(device);
 }
