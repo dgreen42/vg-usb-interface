@@ -28,7 +28,7 @@ pub fn draw_data(txt: &str, x: i32, y: i32, w: i32, h: i32, selected: bool) {
     if selected {
         draw::set_draw_color(enums::Color::from_u32(0x00D3_D3D3));
     } else {
-        draw::set_draw_color(enums::Color::White);
+        draw::set_draw_color(enums::Color::Light2);
     }
     draw::draw_rectf(x, y, w, h);
     draw::set_draw_color(enums::Color::Gray0);
@@ -67,7 +67,6 @@ pub fn draw_table(data: Vec<String>, mut table: Table, headers: Vec<String>) {
                             h,
                             t.is_selected(row, col),
                         );
-                        //println!("{} {} {} {}", x, y, w, h);
                     }
                     _ => (),
                 });

@@ -8,8 +8,8 @@ use serialport::SerialPort;
 use serialport::TTYPort;
 
 use std::{
-    fs::{File, create_dir, remove_file},
-    path::{Path},
+    fs::File,
+    path::Path,
     io::{Read, Write},
     str::from_utf8
 };

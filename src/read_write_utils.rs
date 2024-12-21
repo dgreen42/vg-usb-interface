@@ -47,9 +47,3 @@ pub fn read_temp(path: &Path) -> Vec<String> {
 
     return record
 }
-
-fn get_temp_iter(buffer: BufReader<File>, old_iter: Lines<BufReader<File>>) -> Lines<BufReader<File>> {
-    let iter = buffer.lines();
-
-    return iter
-}

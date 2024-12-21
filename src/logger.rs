@@ -5,17 +5,6 @@ use std::{
 };
 use fltk::prelude::FltkError;
 
-#[cfg(target_os = "linux")]
-use serialport::{
-    TTYPort,
-};
-
-#[cfg(target_os = "windows")]
-use serialport::{
-    SerialPort,
-};
-
-
 pub fn create_log() -> Option<()> {
     if !Path::new("./log").is_dir() {
         let new_dir = create_dir(Path::new("./log"));
@@ -82,6 +71,7 @@ pub fn log_connection_error_tty(error: serialport::Error, name: &str) -> serialp
     error
 }
 
+#[cfg(target_os = "windows")]
 pub fn log_connection_error_win(error: serialport::Error, name: &str) -> serialport::Error {
     log(&format!("Failed to connect to device: {} :: {:?}", name, error));
     error

@@ -1,7 +1,6 @@
 #[cfg(target_os = "linux")]
 pub mod start_gui_linux {
     use fltk:: prelude::*;
-    use serialport::TTYPort;
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
     };

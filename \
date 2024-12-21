@@ -49,14 +49,14 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     let app = App::default();
 
-    let mut main_window = Window::new(200, 200, 1200, 750, "VG Meter 200 USB Interface");
+    let mut main_window = Window::new(200, 200, 1200, 800, "VG Meter 200 USB Interface");
     main_window.make_resizable(true);
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
 
 
     let flex_base = Flex::default()
-        .with_size(1100, 700)
+        .with_size(1100, 800)
         .column()
         .center_of_parent();
 
@@ -65,10 +65,10 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
         .center_of_parent();
     base_grid.set_layout_ext(3, 1, 10, 10);
 
-    let mut menu_grid = Grid::default().with_size(100, 30);
+    let mut menu_grid = Grid::default().with_size(1000, 20);
     menu_grid.set_layout_ext(1, 1, 1, 1);
 
-    let mut menu = create_menu();
+    let mut menu = MenuBar::default().with_size(1100, 20);
     let menu_grid_result = menu_grid.set_widget(&mut menu, 0, 0);
     log_error(menu_grid_result, "menu_grid_result");
 
@@ -84,7 +84,7 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     sub_grid_upper.end();
 
-    let mut sub_grid_bottom = Grid::default().with_size(1000, 470)
+    let mut sub_grid_bottom = Grid::default().with_size(1000, 300)
         .center_of_parent();
     sub_grid_bottom.set_layout_ext(1, 2, 10, 10);
 
@@ -97,8 +97,8 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     sub_grid_bottom.end();
 
-    let base_grid_menu_grid_result = base_grid.set_widget(&mut menu_grid, 0, 0);
-    log_error(base_grid_menu_grid_result, "base_grid_menu_grid_result");
+    let base_grid_menu_grid_result = base_grid.set_widget(&mut sub_grid_upper, 1, 0);
+    log_error(base_grid_menu_grid_result, "base_grid_upper_grid_result");
 
     let base_grid_upper_grid_result = base_grid.set_widget(&mut sub_grid_upper, 1, 0);
     log_error(base_grid_upper_grid_result, "base_grid_upper_grid_result");
@@ -145,7 +145,7 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
 fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
 
-    let mut read_write_grid = Grid::default().with_size(300, 450);
+    let mut read_write_grid = Grid::default().with_size(300, 300);
     read_write_grid.set_layout_ext(6, 2, 5, 5);
     let mut b_read = Button::default().with_label("Read Data").with_size(80, 10);
     let mut b_write = Button::default().with_label("Write Data").with_size(80, 10);
@@ -181,7 +181,7 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
 }
 
 fn create_data_table() -> (Grid, Table) {
-    let mut data_table_grid = Grid::default() .with_size(400, 450);
+    let mut data_table_grid = Grid::default() .with_size(400, 300);
     data_table_grid.set_layout_ext(1, 1, 5, 5);
     let mut table = Table::default();
     table.make_resizable(true);
@@ -296,14 +296,6 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
     let pieces = (c_vec, s_duration);
 
     return (device_grid, pieces)
-}
-
-fn create_menu() -> MenuBar {
-
-    let mut menu = MenuBar::default().with_size(100, 30);
-    menu.add_choice("this");
-
-    return menu
 }
 
 
