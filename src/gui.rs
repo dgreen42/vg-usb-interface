@@ -4,7 +4,7 @@ use serialport::{
 };
 use std::fmt::Debug;
 use fltk::{
-    app::{self, App, Receiver}, button::Button, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{Choice, MenuBar}, output::Output, prelude::*, table::Table, window::Window,
+    app::{self, App, Receiver}, button::Button, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{Choice, SysMenuBar}, output::Output, prelude::*, table::Table, window::Window,
 };
 
 use fltk_theme::{
@@ -298,9 +298,9 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
     return (device_grid, pieces)
 }
 
-fn create_menu() -> MenuBar {
+fn create_menu() -> SysMenuBar {
 
-    let mut menu = MenuBar::default().with_size(100, 30);
+    let mut menu = SysMenuBar::default().with_size(100, 30);
     menu.add_choice("this");
 
     return menu
