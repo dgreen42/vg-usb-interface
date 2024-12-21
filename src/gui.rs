@@ -33,6 +33,21 @@ pub enum Message {
     Close,
     SetDefaults,
     Preferences,
+    Theme,
+}
+
+pub fn create_preferences_window(send: &Sender<Message>) {
+
+    let base_theme = ThemeType::Dark;
+    let mut preferences_window = Window::new(400, 200, 500, 500, "Preferences");
+
+    let app_preferences = create_app_preferences(send);
+    app_preferences.end();
+
+    let theme = WidgetTheme::new(base_theme);
+    theme.apply();
+
+    preferences_window.show();
 }
 
 pub fn create_options_window() {
@@ -52,7 +67,7 @@ pub fn create_options_window() {
 }
 
 
-pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Vec<Button>, Input, Output), Table) {
+pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Vec<Button>, Input, Output), Table, Sender<Message>) {
 
     let base_theme = ThemeType::Dark;
 
@@ -157,7 +172,7 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     data_table_table.emit(send, Message::Table);
 
 
-    return (app, recieve, device_setting_choices, read_write_buttons, data_table_table)
+    return (app, recieve, device_setting_choices, read_write_buttons, data_table_table, send)
 }
 
 fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
@@ -326,4 +341,27 @@ fn create_menu(send: &Sender<Message>) -> SysMenuBar {
     return menu
 }
 
+fn create_app_preferences(send: &Sender<Message>) -> Grid {
+
+    let mut preferences_grid = Grid::default().with_size(500, 500);
+    preferences_grid.set_layout_ext(1, 2, 10, 10);
+
+    let mut l_themes = Frame::default().with_label("Themes");
+    let mut c_themes = Choice::default().with_size(80, 30);
+    c_themes.add_emit("Classic", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("Areo", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("Metro", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("AquaClassic", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("GreyBird", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("Blue", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("Dark", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    c_themes.add_emit("HighContrast", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+
+    let l_themes_preferences_grid_result = preferences_grid.set_widget(&mut l_themes, 0, 0);
+    log_error(l_themes_preferences_grid_result, "l_themes_preferences_grid_result");
+    let c_themes_preferences_grid_result = preferences_grid.set_widget(&mut c_themes, 0, 1);
+    log_error(c_themes_preferences_grid_result, "c_themes_preferences_grid_result");
+
+    return preferences_grid 
+}
 

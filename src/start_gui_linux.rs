@@ -22,6 +22,7 @@ pub mod start_gui_linux {
         let gui_comp = gui::create_window();
         let app = gui_comp.0;
         let reciever = gui_comp.1;
+        let sender = gui_comp.5;
         let mut device_settings_choices = gui_comp.2.0;
         let device_settings_input = gui_comp.2.1;
         let _read_write_buttons = gui_comp.3.0;
@@ -134,7 +135,9 @@ pub mod start_gui_linux {
                     gui::Message::SetDefaults => {
                         gui::create_options_window();
                     },
-                    gui::Message::Preferences => {},
+                    gui::Message::Preferences => {
+                        gui::create_preferences_window(&sender);
+                    },
                     _ => {}
                 }
 
