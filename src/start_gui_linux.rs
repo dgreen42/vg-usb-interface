@@ -131,6 +131,10 @@ pub mod start_gui_linux {
                         let file_path = Path::new(&file_name);
                         read_write_utils::write_file(file_path, temp_path);
                     },
+                    gui::Message::SetDefaults => {
+                        gui::create_options_window();
+                    },
+                    gui::Message::Preferences => {},
                     _ => {}
                 }
 

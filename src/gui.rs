@@ -4,7 +4,7 @@ use serialport::{
 };
 use std::fmt::Debug;
 use fltk::{
-    app::{self, App, Receiver}, button::Button, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{Choice, SysMenuBar}, output::Output, prelude::*, table::Table, window::Window,
+    app::{self, App, Receiver, Sender}, button::Button, enums::{FrameType, Shortcut, Color}, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{self, Choice, SysMenuBar}, output::Output, prelude::*, table::Table, window::Window
 };
 
 use fltk_theme::{
@@ -31,14 +31,23 @@ pub enum Message {
     FileName,
     Stop,
     Close,
+    SetDefaults,
+    Preferences,
 }
 
 pub fn create_options_window() {
 
     let base_theme = ThemeType::Dark;
     let mut options_window = Window::new(200, 200, 500, 500, "Options");
+
+    let device_settings = create_device_settings(); 
+    device_settings.0.end();
+
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
+
+    options_window.end();
+    options_window.show();
 
 }
 
@@ -48,12 +57,12 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     let base_theme = ThemeType::Dark;
 
     let app = App::default();
+    let (send, recieve) = app::channel::<Message>();
 
     let mut main_window = Window::new(200, 200, 1200, 750, "VG Meter 200 USB Interface");
     main_window.make_resizable(true);
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
-
 
     let flex_base = Flex::default()
         .with_size(1100, 700)
@@ -65,14 +74,6 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
         .center_of_parent();
     base_grid.set_layout_ext(3, 1, 10, 10);
 
-    let mut menu_grid = Grid::default().with_size(100, 30);
-    menu_grid.set_layout_ext(1, 1, 1, 1);
-
-    let mut menu = create_menu();
-    let menu_grid_result = menu_grid.set_widget(&mut menu, 0, 0);
-    log_error(menu_grid_result, "menu_grid_result");
-
-    menu_grid.end();
 
     let mut sub_grid_upper = Grid::default().with_size(1000, 200)
         .center_of_parent();
@@ -97,8 +98,10 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     sub_grid_bottom.end();
 
+    /*
     let base_grid_menu_grid_result = base_grid.set_widget(&mut menu_grid, 0, 0);
     log_error(base_grid_menu_grid_result, "base_grid_menu_grid_result");
+    */
 
     let base_grid_upper_grid_result = base_grid.set_widget(&mut sub_grid_upper, 1, 0);
     log_error(base_grid_upper_grid_result, "base_grid_upper_grid_result");
@@ -110,10 +113,24 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     flex_base.end();
 
+    let flex_menu = Flex::default()
+        .with_size(1200, 30)
+        .top_window();
+
+    let mut menu_grid = Grid::default().with_size(100, 30);
+    menu_grid.set_layout_ext(1, 1, 1, 1);
+
+    let mut menu = create_menu(&send);
+    let menu_grid_result = menu_grid.set_widget(&mut menu, 0, 0);
+    log_error(menu_grid_result, "menu_grid_result");
+
+    menu_grid.end();
+
+    flex_menu.unwrap().end();
+
     main_window.end();
     main_window.show();
 
-    let (send, recieve) = app::channel::<Message>();
 
     let mut device_setting_choices = device_settings.1;
 
@@ -298,10 +315,13 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
     return (device_grid, pieces)
 }
 
-fn create_menu() -> SysMenuBar {
+fn create_menu(send: &Sender<Message>) -> SysMenuBar {
 
-    let mut menu = SysMenuBar::default().with_size(100, 30);
-    menu.add_choice("this");
+    let mut menu = SysMenuBar::default().with_size(1200, 30);
+    menu.set_frame(FrameType::FlatBox);
+    menu.set_color(Color::Light1);
+    menu.add_emit("File/Set Defaults", Shortcut::Ctrl | 'd', menu::MenuFlag::Normal, *send, Message::SetDefaults);
+    menu.add_emit("File/Preferences", Shortcut::Ctrl | 'p', menu::MenuFlag::Normal, *send, Message::Preferences);
 
     return menu
 }
