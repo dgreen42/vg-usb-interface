@@ -314,6 +314,7 @@ dependencies = [
  "fltk-theme",
  "posix",
  "serialport",
+ "windows-sys",
 ]
 
 [[package]]

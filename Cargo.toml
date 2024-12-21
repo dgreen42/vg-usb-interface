@@ -9,6 +9,7 @@ fltk = "1.5.0"
 fltk-theme = "0.7.3"
 posix = "0.0.2"
 serialport = "4.6.1"
+windows-sys = "0.59.0"
 
 [[bin1]]
 name = "vg-usb-interface_linux"
