@@ -50,24 +50,34 @@ pub fn create_preferences_window(send: &Sender<Message>) {
     preferences_window.show();
 }
 
-pub fn create_options_window() {
+pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, IntInput)), Window) {
 
     let base_theme = ThemeType::Dark;
-    let mut options_window = Window::new(200, 200, 500, 500, "Options");
+    let options_window = Window::new(200, 200, 500, 500, "Options");
 
-    let device_settings = create_device_settings(); 
+    let device_settings = create_device_settings_options(); 
     device_settings.0.end();
 
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
 
     options_window.end();
-    options_window.show();
 
+    let mut device_setting_choices = device_settings.1.clone();
+
+    device_setting_choices.0[0].emit(*send, Message::Parity);
+    device_setting_choices.0[1].emit(*send, Message::Exclusivity);
+    device_setting_choices.0[2].emit(*send, Message::BaudRate);
+    device_setting_choices.0[3].emit(*send, Message::DataBits);
+    device_setting_choices.0[4].emit(*send, Message::FlowControl);
+    device_setting_choices.0[5].emit(*send, Message::StopBits);
+    device_setting_choices.1.emit(*send, Message::Duration);
+
+    return (device_settings, options_window)
 }
 
 
-pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Vec<Button>, Input, Output), Table, Sender<Message>) {
+pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Output), (Vec<Button>, Input), Table) {
 
     let base_theme = ThemeType::Dark;
 
@@ -90,11 +100,11 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     base_grid.set_layout_ext(3, 1, 10, 10);
 
 
-    let mut sub_grid_upper = Grid::default().with_size(1000, 200)
+    let mut sub_grid_upper = Grid::default().with_size(1000, 220)
         .center_of_parent();
     sub_grid_upper.set_layout_ext(1, 1, 10, 10);
 
-    let mut device_settings = create_device_settings(); 
+    let mut device_settings = create_device_settings_main(); 
     let sub_upper_grid_result = sub_grid_upper.set_widget(&mut device_settings.0, 0, 0);
     log_error(sub_upper_grid_result, "sub_grid_upper_grid_result");
 
@@ -113,14 +123,8 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
 
     sub_grid_bottom.end();
 
-    /*
-    let base_grid_menu_grid_result = base_grid.set_widget(&mut menu_grid, 0, 0);
-    log_error(base_grid_menu_grid_result, "base_grid_menu_grid_result");
-    */
-
     let base_grid_upper_grid_result = base_grid.set_widget(&mut sub_grid_upper, 1, 0);
     log_error(base_grid_upper_grid_result, "base_grid_upper_grid_result");
-    //failed
     let base_grid_bottom_grid_result = base_grid.set_widget(&mut sub_grid_bottom, 2, 0);
     log_error(base_grid_bottom_grid_result, "base_grid_bottom_grid_result");
 
@@ -146,17 +150,11 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     main_window.end();
     main_window.show();
 
+    let mut device_setting_choice = device_settings.1;
+    let mut device_status_output = device_settings.2;
 
-    let mut device_setting_choices = device_settings.1;
-
-    device_setting_choices.0[0].emit(send, Message::Device);
-    device_setting_choices.0[1].emit(send, Message::Parity);
-    device_setting_choices.0[2].emit(send, Message::Exclusivity);
-    device_setting_choices.0[3].emit(send, Message::BaudRate);
-    device_setting_choices.0[4].emit(send, Message::DataBits);
-    device_setting_choices.0[5].emit(send, Message::FlowControl);
-    device_setting_choices.0[6].emit(send, Message::StopBits);
-    device_setting_choices.1.emit(send, Message::Duration);
+    device_setting_choice.emit(send, Message::Device);
+    device_status_output.emit(send, Message::DeviceStatus);
 
     let mut read_write_buttons = read_write.1;
 
@@ -165,17 +163,15 @@ pub fn create_window() -> (App, Receiver<Message>, (Vec<Choice>,  IntInput), (Ve
     read_write_buttons.0[2].emit(send, Message::Stop);
     read_write_buttons.0[3].emit(send, Message::Close);
     read_write_buttons.1.emit(send, Message::FileName);
-    read_write_buttons.2.emit(send, Message::DeviceStatus);
 
     let mut data_table_table = data_table.1;
 
     data_table_table.emit(send, Message::Table);
 
-
-    return (app, recieve, device_setting_choices, read_write_buttons, data_table_table, send)
+    return (app, send, recieve, (device_setting_choice, device_status_output), read_write_buttons, data_table_table)
 }
 
-fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
+fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
 
     let mut read_write_grid = Grid::default().with_size(300, 450);
     read_write_grid.set_layout_ext(6, 2, 5, 5);
@@ -185,18 +181,12 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
     let mut b_close = Button::default().with_label("Close Connection").with_size(80, 10);
     let mut l_file_name = Frame::default().with_label("File Name");
     let mut i_file_name = Input::default().with_size(80, 5);
-    let mut l_device_status = Frame::default().with_label("Device Status");
-    let mut o_device_status = Output::default().with_size(80, 10);
     let b_read_grid_result = read_write_grid.set_widget(&mut b_read, 1, 0);
     log_error(b_read_grid_result, "b_read_grid_result");
     let b_stop_grid_result = read_write_grid.set_widget(&mut b_stop, 2, 0);
     log_error(b_stop_grid_result, "b_stop_grid_result");
     let b_close_grid_result = read_write_grid.set_widget(&mut b_close, 3, 0);
     log_error(b_close_grid_result, "b_close_grid_result");
-    let l_device_status_result = read_write_grid.set_widget(&mut l_device_status, 1, 1);
-    log_error(l_device_status_result, "l_device_status_result ");
-    let o_device_status_result = read_write_grid.set_widget(&mut o_device_status, 2, 1);
-    log_error(o_device_status_result , "o_device_status_result");
     let l_file_name_grid_result = read_write_grid.set_widget(&mut l_file_name, 3, 1);
     log_error(l_file_name_grid_result, "l_file_name_grid_result");
     let i_file_name_grid_result = read_write_grid.set_widget(&mut i_file_name, 4, 1);
@@ -209,7 +199,7 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input, Output))  {
     let b_vec = vec![b_read, b_write, b_stop, b_close];
 
 
-    return (read_write_grid, (b_vec, i_file_name, o_device_status))
+    return (read_write_grid, (b_vec, i_file_name))
 }
 
 fn create_data_table() -> (Grid, Table) {
@@ -237,50 +227,95 @@ fn avail_ports() -> Vec<SerialPortInfo> {
     return ports
 }
 
-fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
+fn create_device_settings_main() -> (Grid, Choice, Output) {
 
-    let mut device_grid = Grid::default().with_size(500, 100);
-    device_grid.set_layout_ext(4, 4, 5, 5);
+    let mut device_grid = Grid::default().with_size(1000, 190);
+    device_grid.set_layout_ext(1, 2, 5, 5);
+
+    let mut device_grid_left = Grid::default().with_size(500, 200);
+    device_grid_left.set_layout_ext(2, 1, 5, 5);
+
+    let mut device_grid_left_upper = Grid::default().with_size(200, 50);
+    device_grid_left_upper.set_layout_ext(2, 1, 1, 1);
+
 
     let ports = avail_ports();
 
-    let mut l_device = Frame::default().with_label("Device");
-    let mut c_device = Choice::default().with_size(20, 10);
+    let mut l_device = Frame::default().with_label("Device").with_size(50, 50);
+    let mut c_device = Choice::default().with_size(50, 50);
     c_device.add_choice("None");
     for port in ports {
         c_device.add_choice(&port.port_name);
     }
-    let l_device_grid_result = device_grid.set_widget(&mut l_device, 0, 0);
-    log_error(l_device_grid_result, "l_device_grid_result");
-    let c_device_grid_result = device_grid.set_widget(&mut c_device, 1, 0);
-    log_error(c_device_grid_result, "c_device_grid_result");
+    let device_grid_left_result = device_grid.set_widget(&mut device_grid_left, 0, 0);
+    let device_grid_left_upper_result = device_grid_left.set_widget(&mut device_grid_left_upper, 0, 0);
+    let l_device_grid_left_upper_result = device_grid_left_upper.set_widget(&mut l_device, 0, 0);
+    let c_device_grid_left_upper_result = device_grid_left_upper.set_widget(&mut c_device, 1, 0);
 
+    device_grid_left_upper.end();
+
+    let mut device_grid_left_lower = Grid::default().with_size(200, 50);
+    device_grid_left_lower.set_layout_ext(2, 1, 1, 1);
+
+    let mut l_read_type = Frame::default().with_label("Read Type").with_size(50, 50);
+    let mut c_read_type = Choice::default().with_size(50, 50);
+    let device_grid_left_lower_result = device_grid_left.set_widget(&mut device_grid_left_lower, 1, 0);
+    let l_read_type_left_lower_result = device_grid_left_lower.set_widget(&mut l_read_type, 0, 0);
+    let c_read_type_left_lower_result = device_grid_left_lower.set_widget(&mut c_read_type, 1, 0);
+
+    device_grid_left_lower.end();
+    device_grid_left.end();
+
+    let mut o_device_status = Output::default().with_size(400, 200);
+
+    //left side
+    //right side
+    let o_device_grid_status_result = device_grid.set_widget(&mut o_device_status, 0, 1);
+
+    log_error(device_grid_left_result, "device_grid_left_result");
+    log_error(device_grid_left_upper_result, "device_grid_left_upper_result");
+    log_error(l_device_grid_left_upper_result, "l_device_grid_left_upper_result");
+    log_error(c_device_grid_left_upper_result, "c_device_grid_left_upper_result");
+    log_error(o_device_grid_status_result, "o_device_grid_status_result");
+    log_error(device_grid_left_lower_result, "device_grid_left_lower_result");
+    log_error(l_read_type_left_lower_result, "l_read_type_left_lower_result");
+    log_error(c_read_type_left_lower_result, "c_read_type_left_lower_result");
+
+    device_grid.end();
+
+    return (device_grid, c_device, o_device_status)
+}
+
+fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
+
+    let mut device_grid = Grid::default().with_size(500, 500);
+    device_grid.set_layout_ext(7, 2, 10, 10);
 
     let mut l_parity = Frame::default().with_label("Parity");
     let mut c_parity = Choice::default().with_size(20, 10);
     c_parity.add_choice("None");
     c_parity.add_choice("Odd");
     c_parity.add_choice("Even");
-    let l_parity_grid_result = device_grid.set_widget(&mut l_parity, 0, 1);
+    let l_parity_grid_result = device_grid.set_widget(&mut l_parity, 0, 0);
     log_error(l_parity_grid_result, "l_parity_grid_result");
-    let c_parity_grid_result = device_grid.set_widget(&mut c_parity, 1, 1);
+    let c_parity_grid_result = device_grid.set_widget(&mut c_parity, 0, 1);
     log_error(c_parity_grid_result, "c_parity_grid_result");
 
     let mut l_exlusivity = Frame::default().with_label("Exclusivity");
     let mut c_exlusivity = Choice::default().with_size(20, 10);
     c_exlusivity.add_choice("Yes");
     c_exlusivity.add_choice("No");
-    let l_exlusivity_grid_result = device_grid.set_widget(&mut l_exlusivity, 0, 2);
+    let l_exlusivity_grid_result = device_grid.set_widget(&mut l_exlusivity, 1, 0);
     log_error(l_exlusivity_grid_result, "l_exlusivity_grid_result");
-    let c_exlusivity_grid_result = device_grid.set_widget(&mut c_exlusivity, 1, 2);
+    let c_exlusivity_grid_result = device_grid.set_widget(&mut c_exlusivity, 1, 1);
     log_error(c_exlusivity_grid_result, "c_exlusivity_grid_result");
 
     let mut l_baud_rate = Frame::default().with_label("Baud Rate");
     let mut c_baud_rate = Choice::default().with_size(20, 10);
     c_baud_rate.add_choice("9600");
-    let l_baud_rate_grid_result = device_grid.set_widget(&mut l_baud_rate, 0, 3);
+    let l_baud_rate_grid_result = device_grid.set_widget(&mut l_baud_rate, 2, 0);
     log_error(l_baud_rate_grid_result, "l_baud_rate_grid_result");
-    let c_baud_rate_grid_result = device_grid.set_widget(&mut c_baud_rate, 1, 3);
+    let c_baud_rate_grid_result = device_grid.set_widget(&mut c_baud_rate, 2, 1);
     log_error(c_baud_rate_grid_result, "c_baud_rate_grid_result");
 
     //lower half
@@ -291,9 +326,9 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
     c_data_bits.add_choice("6");
     c_data_bits.add_choice("7");
     c_data_bits.add_choice("8");
-    let l_data_bits_grid_result = device_grid.set_widget(&mut l_data_bits, 2, 0);
+    let l_data_bits_grid_result = device_grid.set_widget(&mut l_data_bits, 3, 0);
     log_error(l_data_bits_grid_result, "l_data_bits_grid_result");
-    let c_data_bits_grid_result = device_grid.set_widget(&mut c_data_bits, 3, 0);
+    let c_data_bits_grid_result = device_grid.set_widget(&mut c_data_bits, 3, 1);
     log_error(c_data_bits_grid_result, "c_data_bits_grid_result");
 
     let mut l_flow_control = Frame::default().with_label("Flow Control");
@@ -301,30 +336,30 @@ fn create_device_settings() -> (Grid, (Vec<Choice>, IntInput)) {
     c_flow_control.add_choice("None");
     c_flow_control.add_choice("Software");
     c_flow_control.add_choice("Hardware");
-    let l_flow_control_grid_result = device_grid.set_widget(&mut l_flow_control, 2, 1);
+    let l_flow_control_grid_result = device_grid.set_widget(&mut l_flow_control, 4, 0);
     log_error(l_flow_control_grid_result, "l_flow_control_grid_result");
-    let c_flow_control_grid_result = device_grid.set_widget(&mut c_flow_control, 3, 1);
+    let c_flow_control_grid_result = device_grid.set_widget(&mut c_flow_control, 4, 1);
     log_error(c_flow_control_grid_result, "c_flow_control_grid_result");
 
     let mut l_stop_bits = Frame::default().with_label("Stop Bits");
     let mut c_stop_bits = Choice::default().with_size(20, 10);
     c_stop_bits.add_choice("1");
     c_stop_bits.add_choice("2");
-    let l_stop_bits_grid_result = device_grid.set_widget(&mut l_stop_bits, 2, 2);
+    let l_stop_bits_grid_result = device_grid.set_widget(&mut l_stop_bits, 5, 0);
     log_error(l_stop_bits_grid_result, "l_stop_bits_grid_result");
-    let c_stop_bits_grid_result = device_grid.set_widget(&mut c_stop_bits, 3, 2);
+    let c_stop_bits_grid_result = device_grid.set_widget(&mut c_stop_bits, 5, 1);
     log_error(c_stop_bits_grid_result, "c_stop_bits_grid_result");
 
     let mut l_duration = Frame::default().with_label("Duration");
     let mut s_duration = IntInput::default().with_size(20, 10);
-    let l_duration_grid_result = device_grid.set_widget(&mut l_duration, 2, 3);
+    let l_duration_grid_result = device_grid.set_widget(&mut l_duration, 6, 0);
     log_error(l_duration_grid_result, "l_duration_grid_result");
-    let s_duration_grid_result = device_grid.set_widget(&mut s_duration, 3, 3);
+    let s_duration_grid_result = device_grid.set_widget(&mut s_duration, 6, 1);
     log_error(s_duration_grid_result, "s_duration_grid_result");
 
     device_grid.end();
 
-    let c_vec = vec![c_device, c_parity, c_exlusivity, c_baud_rate, c_data_bits, c_flow_control, c_stop_bits];
+    let c_vec = vec![c_parity, c_exlusivity, c_baud_rate, c_data_bits, c_flow_control, c_stop_bits];
     let pieces = (c_vec, s_duration);
 
     return (device_grid, pieces)

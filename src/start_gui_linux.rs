@@ -19,19 +19,31 @@ pub mod start_gui_linux {
             None => panic!("Failed to create temp file"),
         };
 
+        // 0: App
+        // 1: Sender
+        // 2: Revicer
+        // 3: Device Settings main
+        // 4.0: Read Write::Buttons
+        // 4.1: Read Write::Input
+        // 5: Talbe
+
         let gui_comp = gui::create_window();
         let app = gui_comp.0;
-        let reciever = gui_comp.1;
-        let sender = gui_comp.5;
-        let mut device_settings_choices = gui_comp.2.0;
-        let device_settings_input = gui_comp.2.1;
-        let _read_write_buttons = gui_comp.3.0;
-        let read_write_input = gui_comp.3.1;
-        let mut read_write_output = gui_comp.3.2;
-        let table = gui_comp.4;
+        let sender = gui_comp.1;
+        let reciever = gui_comp.2;
+        let device_choice = gui_comp.3.0;
+        let mut device_status = gui_comp.3.1;
+        let _read_write_buttons = gui_comp.4.0;
+        let read_write_input = gui_comp.4.1;
+        let table = gui_comp.5;
+
+        let device_settings = gui::create_options_window(&sender);
+        let mut device_settings_choices = device_settings.0.1.0;
+        let device_settings_input = device_settings.0.1.1;
+        let mut options_window = device_settings.1;
 
         let mut device = String::new();
-        let mut baud_rate: u32 = 0;
+        let mut baud_rate: u32 = 9600;
         let mut parity = String::new();
         let mut timeout: u64 = 0; 
         let mut exclusivity = false;
@@ -40,7 +52,7 @@ pub mod start_gui_linux {
         let mut flow_control = String::new();
         let mut data: Vec<String> = Vec::new();
         let mut active_read = 0;
-        let mut device_status = String::new();
+        let mut device_status_state = String::new();
 
         let mut file_name = String::new();
 
@@ -80,11 +92,11 @@ pub mod start_gui_linux {
                 logger::log(&format!("Message passed {:?}", message));
                 match message {
                     gui::Message::Parity => {
-                        parity = device_settings_choices[1].choice().unwrap();
+                        parity = device_settings_choices[0].choice().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::Exclusivity => {
-                        let c_exclusivity = device_settings_choices[2].choice().unwrap();
+                        let c_exclusivity = device_settings_choices[1].choice().unwrap();
                         match c_exclusivity.as_ref() {
                             "Yes" => exclusivity = true,
                             "No" => exclusivity = false,
@@ -93,19 +105,19 @@ pub mod start_gui_linux {
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::BaudRate => {
-                        baud_rate = device_settings_choices[3].choice().unwrap().parse::<u32>().unwrap();
+                        baud_rate = device_settings_choices[2].choice().unwrap().parse::<u32>().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::DataBits => {
-                        data_bits = device_settings_choices[4].choice().unwrap();
+                        data_bits = device_settings_choices[3].choice().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::FlowControl => {
-                        flow_control = device_settings_choices[5].choice().unwrap();
+                        flow_control = device_settings_choices[4].choice().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::StopBits => {
-                        stop_bits = device_settings_choices[6].choice().unwrap();
+                        stop_bits = device_settings_choices[5].choice().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::Duration => {
@@ -113,7 +125,7 @@ pub mod start_gui_linux {
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::Device => {
-                        device = device_settings_choices[0].choice().unwrap();
+                        device = device_choice.choice().unwrap();
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::Read => {
@@ -133,7 +145,7 @@ pub mod start_gui_linux {
                         read_write_utils::write_file(file_path, temp_path);
                     },
                     gui::Message::SetDefaults => {
-                        gui::create_options_window();
+                        options_window.show();
                     },
                     gui::Message::Preferences => {
                         gui::create_preferences_window(&sender);
@@ -157,17 +169,17 @@ pub mod start_gui_linux {
             }
 
             if device.is_empty() {
-                read_write_output.set_value(&"No device connected");
+                device_status.set_value(&"No device connected");
                 device_settings_choices[0].set_value(0);
             } else {
                 match active_read {
                     0 => {
-                        device_status = "Inactive".to_string();
-                        read_write_output.set_value(&format!("{}: {}", device, device_status));
+                        device_status_state = "Inactive".to_string();
+                        device_status.set_value(&format!("{}: {}", device, device_status_state));
                     },
                     1 => {
-                        device_status = "Reading".to_string();
-                        read_write_output.set_value(&format!("{}: {}", device, device_status));
+                        device_status_state = "Reading".to_string();
+                        device_status.set_value(&format!("{}: {}", device, device_status_state));
                     },
                     _ => {},
                 }
