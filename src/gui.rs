@@ -344,7 +344,7 @@ fn create_menu(send: &Sender<Message>) -> SysMenuBar {
 fn create_app_preferences(send: &Sender<Message>) -> Grid {
 
     let mut preferences_grid = Grid::default().with_size(500, 500);
-    preferences_grid.set_layout_ext(1, 2, 10, 10);
+    preferences_grid.set_layout_ext(4, 2, 10, 10);
 
     let mut l_themes = Frame::default().with_label("Themes");
     let mut c_themes = Choice::default().with_size(80, 30);
@@ -356,11 +356,23 @@ fn create_app_preferences(send: &Sender<Message>) -> Grid {
     c_themes.add_emit("Blue", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
     c_themes.add_emit("Dark", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
     c_themes.add_emit("HighContrast", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
+    let mut l_themes1 = Frame::default().with_label("Themes");
+    let mut c_themes1 = Choice::default().with_size(80, 30);
+    let mut l_themes2 = Frame::default().with_label("Themes");
+    let mut c_themes2 = Choice::default().with_size(80, 30);
+    let mut l_themes3 = Frame::default().with_label("Themes");
+    let mut c_themes3 = Choice::default().with_size(80, 30);
 
     let l_themes_preferences_grid_result = preferences_grid.set_widget(&mut l_themes, 0, 0);
     log_error(l_themes_preferences_grid_result, "l_themes_preferences_grid_result");
     let c_themes_preferences_grid_result = preferences_grid.set_widget(&mut c_themes, 0, 1);
     log_error(c_themes_preferences_grid_result, "c_themes_preferences_grid_result");
+    let l_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut l_themes1, 1, 0);
+    let c_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut c_themes1, 1, 1);
+    let l_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut l_themes2, 2, 0);
+    let c_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut c_themes2, 2, 1);
+    let l_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut l_themes3, 3, 0);
+    let c_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut c_themes3, 3, 1);
 
     return preferences_grid 
 }
