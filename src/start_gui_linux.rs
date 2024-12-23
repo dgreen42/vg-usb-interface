@@ -44,12 +44,12 @@ pub mod start_gui_linux {
 
         let mut device = String::new();
         let mut baud_rate: u32 = 9600;
-        let mut parity = String::new();
-        let mut timeout: u64 = 0; 
+        let mut parity = String::from("None");
+        let mut timeout: u64 = 10; 
         let mut exclusivity = false;
-        let mut data_bits = String::new();
-        let mut stop_bits = String::new();
-        let mut flow_control = String::new();
+        let mut data_bits = String::from("8");
+        let mut stop_bits = String::from("1");
+        let mut flow_control = String::from("None");
         let mut data: Vec<String> = Vec::new();
         let mut active_read = 0;
         let mut device_status_state = String::new();
