@@ -39,17 +39,24 @@ pub mod start_gui_linux {
 
         let device_settings = gui::create_options_window(&sender);
         let mut device_settings_choices = device_settings.0.1.0;
-        let device_settings_input = device_settings.0.1.1;
+        let mut device_settings_input = device_settings.0.1.1;
         let mut options_window = device_settings.1;
 
         let mut device = String::new();
         let mut baud_rate: u32 = 9600;
+        device_settings_choices[2].set_value(0);
         let mut parity = String::from("None");
+        device_settings_choices[0].set_value(0);
         let mut timeout: u64 = 10; 
+        device_settings_input.set_value("10");
         let mut exclusivity = false;
+        device_settings_choices[1].set_value(0);
         let mut data_bits = String::from("8");
+        device_settings_choices[3].set_value(3);
         let mut stop_bits = String::from("1");
+        device_settings_choices[5].set_value(0);
         let mut flow_control = String::from("None");
+        device_settings_choices[4].set_value(0);
         let mut data: Vec<String> = Vec::new();
         let mut active_read = 0;
         let mut device_status_state = String::new();

@@ -227,7 +227,7 @@ fn avail_ports() -> Vec<SerialPortInfo> {
     return ports
 }
 
-fn create_device_settings_main() -> (Grid, Choice, Output) {
+fn create_device_settings_main() -> (Grid, Choice, Output, Choice) {
 
     let mut device_grid = Grid::default().with_size(1000, 190);
     device_grid.set_layout_ext(1, 2, 5, 5);
@@ -259,6 +259,8 @@ fn create_device_settings_main() -> (Grid, Choice, Output) {
 
     let mut l_read_type = Frame::default().with_label("Read Type").with_size(50, 50);
     let mut c_read_type = Choice::default().with_size(50, 50);
+    c_read_type.add_choice("One Shot");
+    c_read_type.add_choice("Active");
     let device_grid_left_lower_result = device_grid_left.set_widget(&mut device_grid_left_lower, 1, 0);
     let l_read_type_left_lower_result = device_grid_left_lower.set_widget(&mut l_read_type, 0, 0);
     let c_read_type_left_lower_result = device_grid_left_lower.set_widget(&mut c_read_type, 1, 0);
@@ -283,7 +285,7 @@ fn create_device_settings_main() -> (Grid, Choice, Output) {
 
     device_grid.end();
 
-    return (device_grid, c_device, o_device_status)
+    return (device_grid, c_device, o_device_status, c_read_type)
 }
 
 fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
@@ -313,6 +315,21 @@ fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
     let mut l_baud_rate = Frame::default().with_label("Baud Rate");
     let mut c_baud_rate = Choice::default().with_size(20, 10);
     c_baud_rate.add_choice("9600");
+    c_baud_rate.add_choice("0");
+    c_baud_rate.add_choice("50");
+    c_baud_rate.add_choice("75");
+    c_baud_rate.add_choice("110");
+    c_baud_rate.add_choice("134");
+    c_baud_rate.add_choice("150");
+    c_baud_rate.add_choice("200");
+    c_baud_rate.add_choice("300");
+    c_baud_rate.add_choice("600");
+    c_baud_rate.add_choice("1200");
+    c_baud_rate.add_choice("1800");
+    c_baud_rate.add_choice("2400");
+    c_baud_rate.add_choice("4800");
+    c_baud_rate.add_choice("19200");
+    c_baud_rate.add_choice("38400");
     let l_baud_rate_grid_result = device_grid.set_widget(&mut l_baud_rate, 2, 0);
     log_error(l_baud_rate_grid_result, "l_baud_rate_grid_result");
     let c_baud_rate_grid_result = device_grid.set_widget(&mut c_baud_rate, 2, 1);
