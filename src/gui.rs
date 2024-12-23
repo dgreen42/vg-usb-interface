@@ -4,7 +4,7 @@ use serialport::{
 };
 use std::fmt::Debug;
 use fltk::{
-    app::{self, App, Receiver, Sender}, button::Button, enums::{FrameType, Shortcut, Color}, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{self, Choice, SysMenuBar}, output::Output, prelude::*, table::Table, window::Window
+    app::{self, App, Receiver, Sender}, button::Button, enums::{FrameType, Shortcut, Color}, frame::Frame, group::{Flex, Grid}, input::{Input, IntInput}, menu::{self, Choice, SysMenuBar}, output::Output, prelude::*, table::Table, window::Window, text::TextDisplay
 };
 
 use fltk_theme::{
@@ -34,6 +34,7 @@ pub enum Message {
     SetDefaults,
     Preferences,
     Theme,
+    ReadType,
 }
 
 pub fn create_preferences_window(send: &Sender<Message>) {
@@ -77,7 +78,7 @@ pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, In
 }
 
 
-pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Output), (Vec<Button>, Input), Table) {
+pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, TextDisplay, Choice), (Vec<Button>, Input), Table) {
 
     let base_theme = ThemeType::Dark;
 
@@ -152,9 +153,11 @@ pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Out
 
     let mut device_setting_choice = device_settings.1;
     let mut device_status_output = device_settings.2;
+    let mut device_read_type = device_settings.3;
 
     device_setting_choice.emit(send, Message::Device);
     device_status_output.emit(send, Message::DeviceStatus);
+    device_read_type.emit(send, Message::ReadType);
 
     let mut read_write_buttons = read_write.1;
 
@@ -168,7 +171,7 @@ pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Out
 
     data_table_table.emit(send, Message::Table);
 
-    return (app, send, recieve, (device_setting_choice, device_status_output), read_write_buttons, data_table_table)
+    return (app, send, recieve, (device_setting_choice, device_status_output, device_read_type), read_write_buttons, data_table_table)
 }
 
 fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
@@ -227,7 +230,7 @@ fn avail_ports() -> Vec<SerialPortInfo> {
     return ports
 }
 
-fn create_device_settings_main() -> (Grid, Choice, Output, Choice) {
+fn create_device_settings_main() -> (Grid, Choice, TextDisplay, Choice) {
 
     let mut device_grid = Grid::default().with_size(1000, 190);
     device_grid.set_layout_ext(1, 2, 5, 5);
@@ -268,7 +271,7 @@ fn create_device_settings_main() -> (Grid, Choice, Output, Choice) {
     device_grid_left_lower.end();
     device_grid_left.end();
 
-    let mut o_device_status = Output::default().with_size(400, 200);
+    let mut o_device_status = TextDisplay::default().with_size(400, 200);
 
     //left side
     //right side
@@ -429,3 +432,6 @@ fn create_app_preferences(send: &Sender<Message>) -> Grid {
     return preferences_grid 
 }
 
+pub fn device_status_output(device: &str, device_status: &str, read_type: &str) -> String {
+    return format!("Device: {}\nDevice Status: {}\nRead Type: {}\n", device, device_status, read_type);
+}

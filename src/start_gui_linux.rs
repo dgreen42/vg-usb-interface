@@ -1,6 +1,9 @@
 #[cfg(target_os = "linux")]
 pub mod start_gui_linux {
-    use fltk:: prelude::*;
+    use fltk::{
+        prelude::*,
+        text::TextBuffer,
+    };
     use std::{
         fs::{create_dir, remove_file, File}, path::Path,
     };
@@ -33,6 +36,7 @@ pub mod start_gui_linux {
         let reciever = gui_comp.2;
         let device_choice = gui_comp.3.0;
         let mut device_status = gui_comp.3.1;
+        let mut device_read_type = gui_comp.3.2;
         let _read_write_buttons = gui_comp.4.0;
         let read_write_input = gui_comp.4.1;
         let table = gui_comp.5;
@@ -44,24 +48,26 @@ pub mod start_gui_linux {
 
         let mut device = String::new();
         let mut baud_rate: u32 = 9600;
-        device_settings_choices[2].set_value(0);
         let mut parity = String::from("None");
-        device_settings_choices[0].set_value(0);
         let mut timeout: u64 = 10; 
-        device_settings_input.set_value("10");
         let mut exclusivity = false;
-        device_settings_choices[1].set_value(0);
         let mut data_bits = String::from("8");
-        device_settings_choices[3].set_value(3);
         let mut stop_bits = String::from("1");
-        device_settings_choices[5].set_value(0);
         let mut flow_control = String::from("None");
-        device_settings_choices[4].set_value(0);
         let mut data: Vec<String> = Vec::new();
         let mut active_read = 0;
         let mut device_status_state = String::new();
-
         let mut file_name = String::new();
+        let mut read_type = String::from("Active");
+
+        device_settings_choices[0].set_value(0);
+        device_settings_input.set_value("10");
+        device_settings_choices[1].set_value(0);
+        device_settings_choices[2].set_value(0);
+        device_settings_choices[3].set_value(3);
+        device_settings_choices[4].set_value(0);
+        device_settings_choices[5].set_value(0);
+
 
         let temp_dir = Path::new("./temp");
         let temp_path = Path::new("./temp/temp_data.csv");
@@ -136,7 +142,17 @@ pub mod start_gui_linux {
                         logger::log(&format!("{} {} {} {} {} {} {} {}", parity, exclusivity, baud_rate, data_bits, flow_control, stop_bits, timeout, device));
                     },
                     gui::Message::Read => {
-                        active_read = 1;
+                        match read_type.as_str() {
+                            "One Shot" => {
+                                active_read = 2;
+                            },
+                            "Active" => {
+                                active_read = 1;
+                            }
+                            _ => {
+                                active_read = 0;
+                            },
+                        }
                     },
                     gui::Message::Stop => {
                         active_read = 0;
@@ -157,6 +173,10 @@ pub mod start_gui_linux {
                     gui::Message::Preferences => {
                         gui::create_preferences_window(&sender);
                     },
+                    gui::Message::ReadType => {
+                        read_type = device_read_type.choice().unwrap();
+                        logger::log(&format!("{}", read_type));
+                    },
                     _ => {}
                 }
 
@@ -165,7 +185,6 @@ pub mod start_gui_linux {
 
             if active_read == 1 {
                 let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
-
                     Ok(dev) => {
                         port_read::read_stream_linux(dev);
                     },
@@ -175,19 +194,39 @@ pub mod start_gui_linux {
                 };
             }
 
+            if active_read == 2 {
+                let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                    Ok(dev) => {
+                        port_read::read_stream_linux(dev);
+                    },
+                    Err(e) => {
+                        logger::log_connection_error_tty(e, &device);
+                    }
+                };
+                active_read = 0;
+            }
+
+
+            device_status.set_buffer(TextBuffer::default());
+            let mut status_buffer = device_status.buffer().unwrap();
+
             if device.is_empty() {
-                device_status.set_value(&"No device connected");
+                status_buffer.set_text(&"No device connected");
                 device_settings_choices[0].set_value(0);
             } else {
                 match active_read {
                     0 => {
                         device_status_state = "Inactive".to_string();
-                        device_status.set_value(&format!("{}: {}", device, device_status_state));
+                        status_buffer.set_text(&gui::device_status_output(&device, &device_status_state, &read_type));
                     },
                     1 => {
                         device_status_state = "Reading".to_string();
-                        device_status.set_value(&format!("{}: {}", device, device_status_state));
+                        status_buffer.set_text(&gui::device_status_output(&device, &device_status_state, &read_type));
                     },
+                    2 => {
+                        device_status_state = "Reading".to_string();
+                        status_buffer.set_text(&gui::device_status_output(&device, &device_status_state, &read_type));
+                    }
                     _ => {},
                 }
             }
