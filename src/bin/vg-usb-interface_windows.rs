@@ -1,4 +1,4 @@
-use vg_usb_interface::widows;
+use vg_usb_interface::windows;
 use std::env;
 use windows_sys::Win32::System::Console::FreeConsole;
 
