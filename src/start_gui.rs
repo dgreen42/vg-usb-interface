@@ -1,5 +1,4 @@
-#[cfg(target_os = "macos")]
-pub mod start_gui_macos {
+pub mod start_gui {
     use fltk::{
         prelude::*,
         text::TextBuffer,
@@ -182,28 +181,82 @@ pub mod start_gui_macos {
 
             }
 
+            #[cfg(target_os = "linux")]
+            {
+                if active_read == 1 {
+                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_linux(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_tty(e, &device);
+                        }
+                    };
+                }
 
-            if active_read == 1 {
-                let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
-                    Ok(dev) => {
-                        port_read::read_stream_macos(dev);
-                    },
-                    Err(e) => {
-                        logger::log_connection_error_tty(e, &device);
-                    }
-                };
+                if active_read == 2 {
+                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_linux(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_tty(e, &device);
+                        }
+                    };
+                    active_read = 0;
+                }
             }
 
-            if active_read == 2 {
-                let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
-                    Ok(dev) => {
-                        port_read::read_stream_linux(dev);
-                    },
-                    Err(e) => {
-                        logger::log_connection_error_tty(e, &device);
-                    }
-                };
-                active_read = 0;
+            #[cfg(target_os = "macos")]
+            {
+                if active_read == 1 {
+                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_macos(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_tty(e, &device);
+                        }
+                    };
+                }
+
+                if active_read == 2 {
+                    let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_macos(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_tty(e, &device);
+                        }
+                    };
+                    active_read = 0;
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                if active_read == 1 {
+                    let con_device = match port_connection::connect_port_win(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_win(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_win(e, &device);
+                        }
+                    };
+                }
+
+                if active_read == 2 {
+                    let con_device = match port_connection::connect_port_win(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
+                        Ok(dev) => {
+                            port_read::read_stream_win(dev);
+                        },
+                        Err(e) => {
+                            logger::log_connection_error_win(e, &device);
+                        }
+                    };
+                    active_read = 0;
+                }
             }
 
 
