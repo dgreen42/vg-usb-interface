@@ -85,7 +85,7 @@ pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Tex
     let app = App::default();
     let (send, recieve) = app::channel::<Message>();
 
-    let mut main_window = Window::new(200, 200, 1200, 750, "VG Meter 200 USB Interface");
+    let mut main_window = Window::new(1, 1, 1200, 750, "VG Meter 200 USB Interface");
     main_window.make_resizable(true);
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
