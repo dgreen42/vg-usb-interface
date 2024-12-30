@@ -3,6 +3,11 @@ use serialport::{
     DataBits, FlowControl, Parity, SerialPort, StopBits, TTYPort, Error, ErrorKind, Result
 };
 
+#[cfg(target_os = "macos")]
+use serialport::{
+    DataBits, FlowControl, Parity, SerialPort, StopBits, TTYPort, Error, ErrorKind, Result
+};
+
 #[cfg(target_os = "windows")]
 use serialport::{
     DataBits, FlowControl, Parity, SerialPort, SerialPortBuilder, StopBits, Error, ErrorKind, Result 
