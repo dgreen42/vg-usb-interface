@@ -37,18 +37,20 @@ pub enum Message {
     ReadType,
 }
 
-pub fn create_preferences_window(send: &Sender<Message>) {
+pub fn create_preferences_window(send: &Sender<Message>) -> ((Grid, Vec<Choice>), Window) {
 
     let base_theme = ThemeType::Dark;
     let mut preferences_window = Window::new(400, 200, 500, 500, "Preferences");
 
-    let app_preferences = create_app_preferences(send);
-    app_preferences.end();
+    let device_preferences = create_device_preferences(send);
 
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
 
-    preferences_window.show();
+    preferences_window.end();
+
+    return (device_preferences, preferences_window)
+
 }
 
 pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, IntInput)), Window) {
@@ -57,7 +59,6 @@ pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, In
     let options_window = Window::new(200, 200, 500, 500, "Options");
 
     let device_settings = create_device_settings_options(); 
-    device_settings.0.end();
 
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
@@ -184,23 +185,25 @@ fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
     let mut b_close = Button::default().with_label("Close Connection").with_size(80, 10);
     let mut l_file_name = Frame::default().with_label("File Name");
     let mut i_file_name = Input::default().with_size(80, 5);
+
     let b_read_grid_result = read_write_grid.set_widget(&mut b_read, 1, 0);
-    log_error(b_read_grid_result, "b_read_grid_result");
     let b_stop_grid_result = read_write_grid.set_widget(&mut b_stop, 2, 0);
-    log_error(b_stop_grid_result, "b_stop_grid_result");
     let b_close_grid_result = read_write_grid.set_widget(&mut b_close, 3, 0);
-    log_error(b_close_grid_result, "b_close_grid_result");
     let l_file_name_grid_result = read_write_grid.set_widget(&mut l_file_name, 3, 1);
-    log_error(l_file_name_grid_result, "l_file_name_grid_result");
     let i_file_name_grid_result = read_write_grid.set_widget(&mut i_file_name, 4, 1);
-    log_error(i_file_name_grid_result, "i_file_name_grid_result");
     let b_write_grid_result = read_write_grid.set_widget(&mut b_write, 4, 0);
-    log_error(b_write_grid_result, "b_write_grid_result");
+
     let read_write_end_result = read_write_grid.end();
+
+    log_error(b_read_grid_result, "b_read_grid_result");
+    log_error(b_stop_grid_result, "b_stop_grid_result");
+    log_error(b_close_grid_result, "b_close_grid_result");
+    log_error(l_file_name_grid_result, "l_file_name_grid_result");
+    log_error(i_file_name_grid_result, "i_file_name_grid_result");
+    log_error(b_write_grid_result, "b_write_grid_result");
     log_error(Ok(read_write_end_result), "read_write_end_result");
 
     let b_vec = vec![b_read, b_write, b_stop, b_close];
-
 
     return (read_write_grid, (b_vec, i_file_name))
 }
@@ -301,19 +304,11 @@ fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
     c_parity.add_choice("None");
     c_parity.add_choice("Odd");
     c_parity.add_choice("Even");
-    let l_parity_grid_result = device_grid.set_widget(&mut l_parity, 0, 0);
-    log_error(l_parity_grid_result, "l_parity_grid_result");
-    let c_parity_grid_result = device_grid.set_widget(&mut c_parity, 0, 1);
-    log_error(c_parity_grid_result, "c_parity_grid_result");
 
     let mut l_exlusivity = Frame::default().with_label("Exclusivity");
     let mut c_exlusivity = Choice::default().with_size(20, 10);
     c_exlusivity.add_choice("Yes");
     c_exlusivity.add_choice("No");
-    let l_exlusivity_grid_result = device_grid.set_widget(&mut l_exlusivity, 1, 0);
-    log_error(l_exlusivity_grid_result, "l_exlusivity_grid_result");
-    let c_exlusivity_grid_result = device_grid.set_widget(&mut c_exlusivity, 1, 1);
-    log_error(c_exlusivity_grid_result, "c_exlusivity_grid_result");
 
     let mut l_baud_rate = Frame::default().with_label("Baud Rate");
     let mut c_baud_rate = Choice::default().with_size(20, 10);
@@ -333,11 +328,6 @@ fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
     c_baud_rate.add_choice("4800");
     c_baud_rate.add_choice("19200");
     c_baud_rate.add_choice("38400");
-    let l_baud_rate_grid_result = device_grid.set_widget(&mut l_baud_rate, 2, 0);
-    log_error(l_baud_rate_grid_result, "l_baud_rate_grid_result");
-    let c_baud_rate_grid_result = device_grid.set_widget(&mut c_baud_rate, 2, 1);
-    log_error(c_baud_rate_grid_result, "c_baud_rate_grid_result");
-
     //lower half
 
     let mut l_data_bits = Frame::default().with_label("Data Bits");
@@ -346,38 +336,53 @@ fn create_device_settings_options() -> (Grid, (Vec<Choice>, IntInput)) {
     c_data_bits.add_choice("6");
     c_data_bits.add_choice("7");
     c_data_bits.add_choice("8");
-    let l_data_bits_grid_result = device_grid.set_widget(&mut l_data_bits, 3, 0);
-    log_error(l_data_bits_grid_result, "l_data_bits_grid_result");
-    let c_data_bits_grid_result = device_grid.set_widget(&mut c_data_bits, 3, 1);
-    log_error(c_data_bits_grid_result, "c_data_bits_grid_result");
 
     let mut l_flow_control = Frame::default().with_label("Flow Control");
     let mut c_flow_control = Choice::default().with_size(20, 10);
     c_flow_control.add_choice("None");
     c_flow_control.add_choice("Software");
     c_flow_control.add_choice("Hardware");
-    let l_flow_control_grid_result = device_grid.set_widget(&mut l_flow_control, 4, 0);
-    log_error(l_flow_control_grid_result, "l_flow_control_grid_result");
-    let c_flow_control_grid_result = device_grid.set_widget(&mut c_flow_control, 4, 1);
-    log_error(c_flow_control_grid_result, "c_flow_control_grid_result");
 
     let mut l_stop_bits = Frame::default().with_label("Stop Bits");
     let mut c_stop_bits = Choice::default().with_size(20, 10);
     c_stop_bits.add_choice("1");
     c_stop_bits.add_choice("2");
-    let l_stop_bits_grid_result = device_grid.set_widget(&mut l_stop_bits, 5, 0);
-    log_error(l_stop_bits_grid_result, "l_stop_bits_grid_result");
-    let c_stop_bits_grid_result = device_grid.set_widget(&mut c_stop_bits, 5, 1);
-    log_error(c_stop_bits_grid_result, "c_stop_bits_grid_result");
 
     let mut l_duration = Frame::default().with_label("Duration");
     let mut s_duration = IntInput::default().with_size(20, 10);
+
+    let l_parity_grid_result = device_grid.set_widget(&mut l_parity, 0, 0);
+    let c_parity_grid_result = device_grid.set_widget(&mut c_parity, 0, 1);
+    let l_exlusivity_grid_result = device_grid.set_widget(&mut l_exlusivity, 1, 0);
+    let c_exlusivity_grid_result = device_grid.set_widget(&mut c_exlusivity, 1, 1);
+    let l_baud_rate_grid_result = device_grid.set_widget(&mut l_baud_rate, 2, 0);
+    let c_baud_rate_grid_result = device_grid.set_widget(&mut c_baud_rate, 2, 1);
+    let l_data_bits_grid_result = device_grid.set_widget(&mut l_data_bits, 3, 0);
+    let c_data_bits_grid_result = device_grid.set_widget(&mut c_data_bits, 3, 1);
+    let l_flow_control_grid_result = device_grid.set_widget(&mut l_flow_control, 4, 0);
+    let c_flow_control_grid_result = device_grid.set_widget(&mut c_flow_control, 4, 1);
+    let l_stop_bits_grid_result = device_grid.set_widget(&mut l_stop_bits, 5, 0);
+    let c_stop_bits_grid_result = device_grid.set_widget(&mut c_stop_bits, 5, 1);
     let l_duration_grid_result = device_grid.set_widget(&mut l_duration, 6, 0);
-    log_error(l_duration_grid_result, "l_duration_grid_result");
     let s_duration_grid_result = device_grid.set_widget(&mut s_duration, 6, 1);
-    log_error(s_duration_grid_result, "s_duration_grid_result");
 
     device_grid.end();
+
+    log_error(l_parity_grid_result, "l_parity_grid_result");
+    log_error(c_parity_grid_result, "c_parity_grid_result");
+    log_error(l_exlusivity_grid_result, "l_exlusivity_grid_result");
+    log_error(c_exlusivity_grid_result, "c_exlusivity_grid_result");
+    log_error(l_baud_rate_grid_result, "l_baud_rate_grid_result");
+    log_error(c_baud_rate_grid_result, "c_baud_rate_grid_result");
+    log_error(l_data_bits_grid_result, "l_data_bits_grid_result");
+    log_error(c_data_bits_grid_result, "c_data_bits_grid_result");
+    log_error(l_flow_control_grid_result, "l_flow_control_grid_result");
+    log_error(c_flow_control_grid_result, "c_flow_control_grid_result");
+    log_error(l_stop_bits_grid_result, "l_stop_bits_grid_result");
+    log_error(c_stop_bits_grid_result, "c_stop_bits_grid_result");
+    log_error(l_duration_grid_result, "l_duration_grid_result");
+    log_error(s_duration_grid_result, "s_duration_grid_result");
+
 
     let c_vec = vec![c_parity, c_exlusivity, c_baud_rate, c_data_bits, c_flow_control, c_stop_bits];
     let pieces = (c_vec, s_duration);
@@ -396,7 +401,7 @@ fn create_menu(send: &Sender<Message>) -> SysMenuBar {
     return menu
 }
 
-fn create_app_preferences(send: &Sender<Message>) -> Grid {
+fn create_device_preferences(send: &Sender<Message>) -> (Grid, Vec<Choice>) {
 
     let mut preferences_grid = Grid::default().with_size(500, 500);
     preferences_grid.set_layout_ext(4, 2, 10, 10);
@@ -411,25 +416,28 @@ fn create_app_preferences(send: &Sender<Message>) -> Grid {
     c_themes.add_emit("Blue", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
     c_themes.add_emit("Dark", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
     c_themes.add_emit("HighContrast", Shortcut::None, menu::MenuFlag::Normal, *send, Message::Theme);
-    let mut l_themes1 = Frame::default().with_label("Themes");
-    let mut c_themes1 = Choice::default().with_size(80, 30);
-    let mut l_themes2 = Frame::default().with_label("Themes");
-    let mut c_themes2 = Choice::default().with_size(80, 30);
-    let mut l_themes3 = Frame::default().with_label("Themes");
-    let mut c_themes3 = Choice::default().with_size(80, 30);
+    let mut l_p1 = Frame::default().with_label("Place Holder 1");
+    let mut c_p1 = Choice::default().with_size(80, 30);
+    let mut l_p2 = Frame::default().with_label("Place Holder 2");
+    let mut c_p2 = Choice::default().with_size(80, 30);
+    let mut l_p3 = Frame::default().with_label("Place Holder 3");
+    let mut c_p3 = Choice::default().with_size(80, 30);
 
     let l_themes_preferences_grid_result = preferences_grid.set_widget(&mut l_themes, 0, 0);
-    log_error(l_themes_preferences_grid_result, "l_themes_preferences_grid_result");
     let c_themes_preferences_grid_result = preferences_grid.set_widget(&mut c_themes, 0, 1);
-    log_error(c_themes_preferences_grid_result, "c_themes_preferences_grid_result");
-    let l_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut l_themes1, 1, 0);
-    let c_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut c_themes1, 1, 1);
-    let l_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut l_themes2, 2, 0);
-    let c_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut c_themes2, 2, 1);
-    let l_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut l_themes3, 3, 0);
-    let c_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut c_themes3, 3, 1);
+    let l_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut l_p1, 1, 0);
+    let c_themes_preferences_grid_result1 = preferences_grid.set_widget(&mut c_p1, 1, 1);
+    let l_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut l_p2, 2, 0);
+    let c_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut c_p2, 2, 1);
+    let l_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut l_p3, 3, 0);
+    let c_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut c_p3, 3, 1);
 
-    return preferences_grid 
+    log_error(l_themes_preferences_grid_result, "l_themes_preferences_grid_result");
+    log_error(c_themes_preferences_grid_result, "c_themes_preferences_grid_result");
+
+    let preference_choices = vec![c_themes, c_p1, c_p2, c_p3];
+
+    return (preferences_grid, preference_choices)
 }
 
 pub fn device_status_output(device: &str, device_status: &str, read_type: &str) -> String {

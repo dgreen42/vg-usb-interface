@@ -40,6 +40,10 @@ pub mod start_gui {
         let read_write_input = gui_comp.4.1;
         let table = gui_comp.5;
 
+        let device_preferences = gui::create_preferences_window(&sender);
+        let mut device_preferences_choices = device_preferences.0.1;
+        let mut preferences_window = device_preferences.1;
+
         let device_settings = gui::create_options_window(&sender);
         let mut device_settings_choices = device_settings.0.1.0;
         let mut device_settings_input = device_settings.0.1.1;
@@ -58,6 +62,7 @@ pub mod start_gui {
         let mut device_status_state = String::new();
         let mut file_name = String::new();
         let mut read_type = String::from("Active");
+        let mut theme = String::from("Areo");
 
         device_settings_choices[0].set_value(0);
         device_settings_input.set_value("10");
@@ -173,7 +178,7 @@ pub mod start_gui {
                         options_window.show();
                     },
                     gui::Message::Preferences => {
-                        gui::create_preferences_window(&sender);
+                        preferences_window.show();
                     },
                     gui::Message::ReadType => {
                         read_type = device_read_type.choice().unwrap();
