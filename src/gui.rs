@@ -219,7 +219,7 @@ fn create_data_table() -> (Grid, Table) {
     return (data_table_grid, table)
 }
 
-fn avail_ports() -> Vec<SerialPortInfo> {
+pub fn avail_ports() -> Vec<SerialPortInfo> {
     let mut ports: Vec<SerialPortInfo> = Vec::new();
     let avail_ports = available_ports();
     match avail_ports {

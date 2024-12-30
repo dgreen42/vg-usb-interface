@@ -33,7 +33,7 @@ pub mod start_gui {
         let app = gui_comp.0;
         let sender = gui_comp.1;
         let reciever = gui_comp.2;
-        let device_choice = gui_comp.3.0;
+        let mut device_choice = gui_comp.3.0;
         let mut device_status = gui_comp.3.1;
         let mut device_read_type = gui_comp.3.2;
         let _read_write_buttons = gui_comp.4.0;
@@ -67,6 +67,8 @@ pub mod start_gui {
         device_settings_choices[4].set_value(0);
         device_settings_choices[5].set_value(0);
 
+        device_choice.set_value(0);
+        device_read_type.set_value(1);
 
         let temp_dir = Path::new("./temp");
         let temp_path = Path::new("./temp/temp_data.csv");
@@ -157,7 +159,8 @@ pub mod start_gui {
                         active_read = 0;
                     },
                     gui::Message::Close => {
-                        device = String::new();
+                        device.clear();
+                        device_choice.set_value(0);
                     },
                     gui::Message::FileName => {},
                     gui::Message::Write => {
