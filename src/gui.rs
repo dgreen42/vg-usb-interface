@@ -12,7 +12,7 @@ use fltk_theme::{
     ThemeType,
 };
 
-use crate::logger::log_error;
+use crate::logger::{log_error, log};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
@@ -35,27 +35,94 @@ pub enum Message {
     Preferences,
     Theme,
     ReadType,
+    ApplyPreferences,
 }
 
-pub fn create_preferences_window(send: &Sender<Message>) -> ((Grid, Vec<Choice>), Window) {
+fn theme_choice(themes_string: &i32) -> ThemeType {
+    match themes_string {
+        0 => {
+            log(&String::from("Theme: Classic"));
+            return ThemeType::Classic;
+        },
+        1 => {
+            log(&String::from("Theme: Aero"));
+            return ThemeType::Aero;
+        },
+        2 => {
+            log(&String::from("Theme: Metro"));
+            return ThemeType::Metro;
+        },
+        3 => {
+            log(&String::from("Theme: AquaClassic"));
+            return ThemeType::AquaClassic;
+        },
+        4 => {
+            log(&String::from("Theme: GreyBird"));
+            return ThemeType::Greybird;
+        },
+        5 => {
+            log(&String::from("Theme: Blue"));
+            return ThemeType::Blue;
+        },
+        6 => {
+            log(&String::from("Theme: Dark"));
+            return ThemeType::Dark;
+        },
+        7 => {
+            log(&String::from("Theme: HighContrast"));
+            return ThemeType::HighContrast;
+        },
+        &_ => {
+            log(&String::from("Theme: Classic"));
+            return ThemeType::Classic;
+        },
+    }
+}
 
-    let base_theme = ThemeType::Dark;
-    let mut preferences_window = Window::new(400, 200, 500, 500, "Preferences");
+pub fn create_preferences_window(send: &Sender<Message>, theme: &i32) -> ((Grid, Vec<Choice>), Window) {
 
-    let device_preferences = create_device_preferences(send);
+    let base_theme = theme_choice(theme);
+    let preferences_window = Window::new(400, 200, 500, 500, "Preferences");
 
     let theme = WidgetTheme::new(base_theme);
     theme.apply();
 
+    let mut preference_grid = Grid::default().with_size(500, 500);
+    preference_grid.set_layout_ext(2, 1, 1, 1);
+
+    let mut preferences_grid_lower = Grid::default().with_size(500, 80);
+    preferences_grid_lower.set_layout_ext(1, 2, 20, 10);
+
+    let mut apply_preferences = Button::default().with_label("Apply").with_size(80, 10);
+    let device_preferences_apply_result = preferences_grid_lower.set_widget(&mut apply_preferences, 0, 1);
+
+    preferences_grid_lower.end();
+    
+    let device_preferences = create_device_preferences(send);
+    let mut device_preferences_grid = device_preferences.0.clone();
+    let device_preferences_choices_result = preference_grid.set_widget(&mut device_preferences_grid, 0, 0);
+    let device_preferences_grid_lower_result = preference_grid.set_widget(&mut preferences_grid_lower, 1, 0);
+
+    preference_grid.end();
+
+    log_error(device_preferences_grid_lower_result, "device_preferences_grid_lower_result");
+    log_error(device_preferences_choices_result, "device_preferences_choices_result");
+    log_error(device_preferences_apply_result, "device_preferences_apply_result");
+
     preferences_window.end();
+
+    let mut device_preferences_choices = device_preferences.1.clone();
+
+    device_preferences_choices[0].emit(*send, Message::Theme);
+    apply_preferences.emit(*send, Message::ApplyPreferences);
 
     return (device_preferences, preferences_window)
 
 }
 
-pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, IntInput)), Window) {
+pub fn create_options_window(send: &Sender<Message>, theme: &i32) -> ((Grid, (Vec<Choice>, IntInput)), Window) {
 
-    let base_theme = ThemeType::Dark;
+    let base_theme = theme_choice(theme);
     let options_window = Window::new(200, 200, 500, 500, "Options");
 
     let device_settings = create_device_settings_options(); 
@@ -79,9 +146,9 @@ pub fn create_options_window(send: &Sender<Message>) -> ((Grid, (Vec<Choice>, In
 }
 
 
-pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, TextDisplay, Choice), (Vec<Button>, Input), Table) {
+pub fn create_window(theme: &i32) -> (App, Sender<Message>, Receiver<Message>, (Choice, TextDisplay, Choice), (Vec<Button>, Input), Table, Window) {
 
-    let base_theme = ThemeType::Dark;
+    let base_theme = theme_choice(theme);
 
     let app = App::default();
     let (send, recieve) = app::channel::<Message>();
@@ -150,7 +217,6 @@ pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Tex
     flex_menu.unwrap().end();
 
     main_window.end();
-    main_window.show();
 
     let mut device_setting_choice = device_settings.1;
     let mut device_status_output = device_settings.2;
@@ -172,7 +238,7 @@ pub fn create_window() -> (App, Sender<Message>, Receiver<Message>, (Choice, Tex
 
     data_table_table.emit(send, Message::Table);
 
-    return (app, send, recieve, (device_setting_choice, device_status_output, device_read_type), read_write_buttons, data_table_table)
+    return (app, send, recieve, (device_setting_choice, device_status_output, device_read_type), read_write_buttons, data_table_table, main_window)
 }
 
 fn create_read_write() -> (Grid, (Vec<Button>, Input))  {
@@ -403,7 +469,7 @@ fn create_menu(send: &Sender<Message>) -> SysMenuBar {
 
 fn create_device_preferences(send: &Sender<Message>) -> (Grid, Vec<Choice>) {
 
-    let mut preferences_grid = Grid::default().with_size(500, 500);
+    let mut preferences_grid = Grid::default().with_size(500, 400);
     preferences_grid.set_layout_ext(4, 2, 10, 10);
 
     let mut l_themes = Frame::default().with_label("Themes");
@@ -431,6 +497,8 @@ fn create_device_preferences(send: &Sender<Message>) -> (Grid, Vec<Choice>) {
     let c_themes_preferences_grid_result2 = preferences_grid.set_widget(&mut c_p2, 2, 1);
     let l_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut l_p3, 3, 0);
     let c_themes_preferences_grid_result3 = preferences_grid.set_widget(&mut c_p3, 3, 1);
+
+    preferences_grid.end();
 
     log_error(l_themes_preferences_grid_result, "l_themes_preferences_grid_result");
     log_error(c_themes_preferences_grid_result, "c_themes_preferences_grid_result");

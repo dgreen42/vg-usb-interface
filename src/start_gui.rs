@@ -28,8 +28,10 @@ pub mod start_gui {
         // 4.0: Read Write::Buttons
         // 4.1: Read Write::Input
         // 5: Talbe
+        // 6: Window
 
-        let gui_comp = gui::create_window();
+        let default_theme = 6;
+        let mut gui_comp = gui::create_window(&default_theme);
         let app = gui_comp.0;
         let sender = gui_comp.1;
         let reciever = gui_comp.2;
@@ -39,12 +41,14 @@ pub mod start_gui {
         let _read_write_buttons = gui_comp.4.0;
         let read_write_input = gui_comp.4.1;
         let table = gui_comp.5;
+        let mut main_window = gui_comp.6;
 
-        let device_preferences = gui::create_preferences_window(&sender);
+        let mut device_preferences = gui::create_preferences_window(&sender, &default_theme);
         let mut device_preferences_choices = device_preferences.0.1;
+        let mut device_preferences_theme = &device_preferences_choices[0];
         let mut preferences_window = device_preferences.1;
 
-        let device_settings = gui::create_options_window(&sender);
+        let mut device_settings = gui::create_options_window(&sender, &default_theme);
         let mut device_settings_choices = device_settings.0.1.0;
         let mut device_settings_input = device_settings.0.1.1;
         let mut options_window = device_settings.1;
@@ -62,7 +66,7 @@ pub mod start_gui {
         let mut device_status_state = String::new();
         let mut file_name = String::new();
         let mut read_type = String::from("Active");
-        let mut theme = String::from("Areo");
+        let mut theme = default_theme;
 
         device_settings_choices[0].set_value(0);
         device_settings_input.set_value("10");
@@ -98,6 +102,8 @@ pub mod start_gui {
                 Err(e) => logger::log(&format!("Failed to create temp file {:?}", e)),
             }
         }
+
+        main_window.show();
 
         while app.wait() {
 
@@ -178,6 +184,26 @@ pub mod start_gui {
                         options_window.show();
                     },
                     gui::Message::Preferences => {
+                        preferences_window.show();
+                    },
+                    gui::Message::ApplyPreferences => {
+                        main_window.hide();
+                        options_window.hide();
+                        preferences_window.hide();
+
+                        theme = device_preferences_theme.value();
+                        println!("{}", theme);
+
+                        gui_comp = gui::create_window(&theme);
+                        device_settings = gui::create_options_window(&sender, &theme);
+                        device_preferences = gui::create_preferences_window(&sender, &theme);
+                        device_preferences_theme = &device_preferences.0.1[0];
+
+                        main_window = gui_comp.6;
+                        options_window = device_settings.1;
+                        preferences_window = device_preferences.1;
+
+                        main_window.show();
                         preferences_window.show();
                     },
                     gui::Message::ReadType => {
