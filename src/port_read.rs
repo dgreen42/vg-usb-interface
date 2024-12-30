@@ -126,7 +126,7 @@ pub fn read_stream_win(mut device: Box<dyn SerialPort>) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn read_stream_linux(mut device: TTYPort) {
+pub fn read_stream_mac(mut device: TTYPort) {
     logger::log(&format!("Device read entry: {:?}", device));
 
     let temp_path = Path::new("./temp/temp_data.csv");

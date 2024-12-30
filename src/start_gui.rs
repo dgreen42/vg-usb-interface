@@ -246,7 +246,7 @@ pub mod start_gui {
                 if active_read == 1 {
                     let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
                         Ok(dev) => {
-                            port_read::read_stream_macos(dev);
+                            port_read::read_stream_mac(dev);
                         },
                         Err(e) => {
                             logger::log_connection_error_tty(e, &device);
@@ -257,7 +257,7 @@ pub mod start_gui {
                 if active_read == 2 {
                     let con_device = match port_connection::connect_port_tty(&device , baud_rate, &parity, timeout, exclusivity, &data_bits, &flow_control, &stop_bits) {
                         Ok(dev) => {
-                            port_read::read_stream_macos(dev);
+                            port_read::read_stream_mac(dev);
                         },
                         Err(e) => {
                             logger::log_connection_error_tty(e, &device);
